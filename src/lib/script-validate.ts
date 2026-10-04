@@ -29,9 +29,13 @@ export async function clampScriptToDay(dayId: number, script: Script): Promise<S
     }
     return [out];
   });
-  const open = script.open
-    ? { shots: script.open.shots.map((o) => { const c = idx.get(o.clip); if (!c || !c.durationSecs) return o; const at = Math.max(0, Math.min(o.at, c.durationSecs - o.len)); return { ...o, at }; }) }
-    : undefined;
+  // Cold-open frames: only analysed clips with sound (vlog_cut cuts an audio piece for every shot, open included).
+  const openShots = (script.open?.shots ?? []).flatMap((o) => {
+    const c = idx.get(o.clip);
+    if (!c || !c.durationSecs || c.hasAudio === false) return [];
+    return [{ ...o, at: Math.max(0, Math.min(o.at, c.durationSecs - o.len)) }];
+  });
+  const open = openShots.length ? { shots: openShots } : undefined;
   return { ...script, shots, open };
 }
 
