@@ -12,6 +12,7 @@ import { eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { clipTag } from "@/lib/sidecars";
 import { momentsFromFrames, probe, scoreFrames } from "@/lib/analyze";
+import { writeOtioSidecar, writeSttSidecar } from "@/lib/sidecars-write";
 
 const execFileP = promisify(execFile);
 const openai = () => createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -100,6 +101,8 @@ export async function ingestClip(file: string, opts: { dayTitle?: string; source
     emit({ stage: "shots", shots: moments.map((m) => ({ startSecs: m.startSecs, endSecs: m.endSecs, score: m.score, bestFrameTs: m.bestFrameTs })) });
     const sentences = (stt?.segments ?? []).map((s) => ({ text: s.text.trim(), start: s.start, end: s.end, words: (s.words ?? []).map((w) => ({ text: w.word.trim(), start: w.start, end: w.end, confidence: w.probability })) })).filter((s) => s.text);
     if (meta.hasAudio) emit({ stage: "whisper", status: "done", language: stt?.language ?? null, sentences: sentences.map((s, idx) => ({ idx, text: s.text, start: s.start, end: s.end })) });
+    // The sidecars vlog_cut.py reads: from here on this clip cuts like any clip the desktop analyser touched.
+    await Promise.all([writeOtioSidecar(path.resolve(file), meta, moments, frames), writeSttSidecar(path.resolve(file), stt?.language ?? null, meta.durationSecs, sentences)]);
     const overall = moments.length ? moments.reduce((a, m) => a + m.score * (m.endSecs - m.startSecs), 0) / Math.max(1, meta.durationSecs) : null;
 
     const [clip] = await db
