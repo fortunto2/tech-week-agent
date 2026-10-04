@@ -16,7 +16,7 @@ export default function Home() {
           <h1 className="text-base font-semibold">Life2Film Director</h1>
           <span className="text-xs text-muted-foreground">your days → trailers · learns your taste</span>
         </header>
-        <UploadAnalyze />
+        {process.env.NEXT_PUBLIC_LOCAL_TOOLS !== "0" && <UploadAnalyze />}
         <div className="min-h-0 flex-1">
           <Thread />
         </div>
