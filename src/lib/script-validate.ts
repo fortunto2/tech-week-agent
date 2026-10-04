@@ -1,6 +1,34 @@
 import type { Script } from "./script-schema";
 import { dayIndex } from "./day-text";
 
+/** Pull indices and seconds back inside the footage: an off-by-one from the model must not kill a render. */
+export async function clampScriptToDay(dayId: number, script: Script): Promise<Script> {
+  const idx = await dayIndex(dayId);
+  const shots = script.shots.map((s) => {
+    const c = idx.get(s.clip);
+    if (!c) return s;
+    const out = { ...s };
+    if (out.say && c.sentences > 0) {
+      const max = c.sentences - 1;
+      out.say = [Math.min(out.say[0], max), Math.min(out.say[1], max)];
+      if (out.say[0] > out.say[1]) out.say = [out.say[1], out.say[0]];
+    }
+    const at = out.show ?? out.walk;
+    if (at !== undefined && c.durationSecs > 0) {
+      const len = out.len ?? 2.6;
+      const start = Math.max(0, Math.min(at, c.durationSecs - len));
+      if (out.show !== undefined) out.show = start;
+      else out.walk = start;
+      out.len = Math.min(len, Math.max(0.5, c.durationSecs - start));
+    }
+    return out;
+  });
+  const open = script.open
+    ? { shots: script.open.shots.map((o) => { const c = idx.get(o.clip); if (!c || !c.durationSecs) return o; const at = Math.max(0, Math.min(o.at, c.durationSecs - o.len)); return { ...o, at }; }) }
+    : undefined;
+  return { ...script, shots, open };
+}
+
 /** Checks a script against what the day actually contains. Returns human-readable problems; empty = ok. */
 export async function validateScriptAgainstDay(dayId: number, script: Script): Promise<string[]> {
   const idx = await dayIndex(dayId);

@@ -8,7 +8,42 @@ import { db, schema } from "@/db";
 import { dayText } from "@/lib/day-text";
 import { model } from "@/lib/llm";
 import { SCRIPT_FORMAT_DOC, ScriptSchema, type Script } from "@/lib/script-schema";
-import { validateScriptAgainstDay } from "@/lib/script-validate";
+
+// What the model fills in. OpenAI strict JSON schema allows neither tuples nor optional keys, so this is a
+// flat shape with nullable fields; toScript() turns it into the real script.json contract.
+const LlmScriptSchema = z.object({
+  about: z.string().describe("one line: what the film is about and its tone"),
+  hold: z.number().describe("seconds the speaker stays on screen before a cutaway, usually 4"),
+  cutaway: z.number().describe("default cutaway length in seconds, usually 2.8"),
+  open: z.array(z.object({ clip: z.string(), at: z.number(), len: z.number() })).describe("4-6 cold-open frames, silent, strongest first"),
+  shots: z.array(
+    z.object({
+      clip: z.string().describe("four-digit clip tag"),
+      kind: z.enum(["say", "show", "walk"]),
+      from: z.number().nullable().describe("say: first sentence index of that clip"),
+      to: z.number().nullable().describe("say: last sentence index (inclusive)"),
+      at: z.number().nullable().describe("show/walk: start second inside the clip"),
+      len: z.number().nullable().describe("show/walk: length in seconds"),
+      note: z.string(),
+    }),
+  ),
+});
+type LlmScript = z.infer<typeof LlmScriptSchema>;
+
+function toScript(l: LlmScript): unknown {
+  return {
+    _: l.about,
+    layout: { hold: l.hold || 4, cutaway: l.cutaway || 2.8 },
+    open: l.open.length ? { shots: l.open.map((o) => ({ clip: o.clip, at: o.at, len: Math.min(3, Math.max(0.8, o.len)) })) } : undefined,
+    shots: l.shots.map((s) => {
+      const base = { clip: s.clip, note: s.note || undefined };
+      if (s.kind === "say") return { ...base, say: [Math.round(s.from ?? 0), Math.round(s.to ?? s.from ?? 0)] };
+      if (s.kind === "walk") return { ...base, walk: s.at ?? 0, len: s.len ?? 12 };
+      return { ...base, show: s.at ?? 0, len: s.len ?? 2.6 };
+    }),
+  };
+}
+import { clampScriptToDay, validateScriptAgainstDay } from "@/lib/script-validate";
 
 export async function activeRulesText(): Promise<string> {
   const rs = await db.select().from(schema.rules).where(eq(schema.rules.active, true)).orderBy(schema.rules.id);
@@ -29,7 +64,7 @@ function directorPrompt(args: { brief: string; rules: string; day: string; previ
     `Walks ("walk") are 10–20 s from clips that have NO speech. Last shot of the film is a walk alone.`,
     `Notes are short, in the owner's language (Russian), and say why the shot is there (e.g. "ХУК: …", "I ДОЛИНА · …").`,
     ``,
-    `Output exactly this JSON shape, nothing else:`,
+    `The script.json the renderer reads looks like this (you fill the equivalent flat fields: kind=say with from/to, kind=show or walk with at/len):`,
     SCRIPT_FORMAT_DOC,
     ``,
     previous ? `Previous version of the script:\n${JSON.stringify(previous)}\n` : ``,
@@ -69,11 +104,13 @@ export const writeScript = createTool({
 
     const { output } = await generateText({
       model: model("director"),
-      output: Output.object({ schema: ScriptSchema }),
+      output: Output.object({ schema: LlmScriptSchema }),
       prompt: directorPrompt({ brief, rules, day: day.text, previous, feedback, targetSecs }),
-      maxOutputTokens: 8000,
+      maxOutputTokens: 12000,
     });
-    const script = output as Script;
+    const parsed = ScriptSchema.safeParse(toScript(output as LlmScript));
+    if (!parsed.success) throw new Error(`script did not validate: ${parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`);
+    const script = await clampScriptToDay(dayId, parsed.data);
     const problems = await validateScriptAgainstDay(dayId, script);
 
     const version = (latest?.version ?? 0) + 1;
