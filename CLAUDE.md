@@ -125,3 +125,13 @@ explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name:
   once the $500 claim enables it (one env var). RSVP forms use the name **Rustam Salavatov** and the
   agent inbox rust-6252@agentmail.to; real registrations on 3 free open Luma events 5–6 Oct.
   Travel-time base for the brief: SoMa, 511 Harrison St (37.7857, -122.3947).
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

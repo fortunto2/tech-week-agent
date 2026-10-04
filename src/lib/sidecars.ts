@@ -68,13 +68,18 @@ type RationalTime = { value: number; rate: number };
 const secs = (t: RationalTime | undefined) => (t ? t.value / t.rate : 0);
 
 export async function readOtio(folder: string, file: string): Promise<OtioSummary | null> {
+  // The analyser names it `<file>.MP4.va.otio` (full name), older runs used `<base>.va.otio`. Try both.
   const base = file.replace(/\.[^.]+$/, "");
-  let doc: Record<string, unknown>;
-  try {
-    doc = JSON.parse(await readFile(path.join(folder, `${base}.va.otio`), "utf8"));
-  } catch {
-    return null;
+  let doc: Record<string, unknown> | null = null;
+  for (const name of [`${file}.va.otio`, `${base}.va.otio`]) {
+    try {
+      doc = JSON.parse(await readFile(path.join(folder, name), "utf8"));
+      break;
+    } catch {
+      /* try the next name */
+    }
   }
+  if (!doc) return null;
   const va = ((doc.metadata as { va?: Record<string, unknown> } | undefined)?.va ?? {}) as Record<string, unknown>;
   const tracks = (doc.tracks as { children?: { children?: unknown[] }[] } | undefined)?.children ?? [];
   const segments: OtioSegment[] = [];
