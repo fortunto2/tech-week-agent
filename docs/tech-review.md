@@ -14,7 +14,7 @@
 
 ## Thin or risky
 
-1. ~~Render is a tool call inside the chat request~~ **Fixed 15:30**: `render_script` returns at once, the job
+1. ~~Render is a tool call inside the chat request~~ **Fixed 15:05**: `render_script` returns at once, the job
    runs in the background (`src/lib/render.ts`), the card polls `/api/renders/<id>` and shows the renderer's
    own progress lines, then the player with a poster.
 2. **Only one LLM path tested: OpenAI direct.** Neon AI Gateway needs the paid plan (claim pending); Anthropic
@@ -30,7 +30,7 @@
 7. **Evicted iCloud days**: sidecars ingest fine, captions/thumbnails skip them (never download by accident).
 8. **Mastra memory thread is fixed** (`owner-main` unless `threadId` is sent). Fine for one owner.
 
-9. ~~Uploaded clips could not be cut~~ **Fixed 15:40**: `vlog_cut.py` needs `.va.otio` / `.va.stt.json` beside
+9. ~~Uploaded clips could not be cut~~ **Fixed 15:10**: `vlog_cut.py` needs `.va.otio` / `.va.stt.json` beside
    each clip; ingest now writes both from our own analysis (`src/lib/sidecars-write.ts`). Measured: two
    uploaded clips → 35 s reel rendered in 24 s. Clips with < 8 recognised words are skipped by the cutter
    (its hallucination guard), which is right.
