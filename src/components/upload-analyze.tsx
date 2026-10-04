@@ -141,8 +141,8 @@ export function UploadAnalyze() {
       </div>
       {st.error && <div className="mt-1 text-xs text-destructive">{st.error}</div>}
       {(st.frames.length > 0 || st.whisper) && (
-        <div className="mt-2 grid gap-2 md:grid-cols-[1fr_220px]">
-          <div>
+        <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_220px]">
+          <div className="min-w-0">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>frame quality · life2film engine, 2 fps, 31 measurements/frame</span>
               <span>{st.frames.length} frames{st.shots.length ? ` · ${st.shots.length} shots` : ""}</span>
