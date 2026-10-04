@@ -77,10 +77,7 @@ type RenderStatus = { renderId: number; status: string; mediaUrl: string | null;
 
 /** Polls /api/renders/<id> while rendering, then shows the player. */
 export function RenderCard({ r }: { r: RenderStatus }) {
-  const [st, setSt] = useState<RenderStatus>(r);
-  useEffect(() => {
-    setSt(r);
-  }, [r]);
+  const [st, setSt] = useState<RenderStatus>(r); // the tool result never changes after it arrives; only polling updates it
   useEffect(() => {
     if (st.status !== "rendering") return;
     const t = setInterval(async () => {
