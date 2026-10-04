@@ -1,0 +1,22 @@
+[
+  {
+    "id": "01-intro",
+    "text": "I shoot every day of my life on a pocket camera. A month in the US, a hundred and sixty clips a week. Editing one day used to take me a whole night. For a month I edited with an AI agent in the terminal, and wrote down every correction I gave it. This is that agent as a product: Life2Film Director, a personal film director that knows my footage and my taste."
+  },
+  {
+    "id": "02-memory",
+    "text": "Everything lives in Neon Postgres. Nine days of footage, six hundred and forty-eight clips, five and a half thousand sentences with word timings, nine thousand scored shots, and a caption of what the camera saw in every clip. Search is hybrid: Lakebase vector search plus BM25, fused with reciprocal rank. Ask where my daughter talks about home, and it returns the clip, the second, and the line. Ask for a sunset by the ocean, and it finds the picture even when nobody spoke."
+  },
+  {
+    "id": "03-director",
+    "text": "Then the director writes the script. It reads the whole day as text and my ten standing rules, learned from a month of my own corrections: open with a hook, never cut a thought mid-sentence, show what is being talked about. The script is validated against the footage, laid out as OpenTimelineIO, and rendered by my open-source Rust renderer on the Mac. On Fly it would be a sprite. This is the family reel it cut for my mother, from search results, in under four minutes."
+  },
+  {
+    "id": "04-learns",
+    "text": "And it learns. I said: the first ten seconds are boring, I need a hook, fire, water, faces. That remark became a durable rule in Neon, the script was revised, the opening re-cut. Next film, same taste, no repeat. New clips need no pre-processing: the life2film engine scores frames in WebAssembly, whisper transcribes, a vision model captions, and clips mailed from my phone to the agent's own AgentMail inbox become footage automatically."
+  },
+  {
+    "id": "05-close",
+    "text": "For parents, it is a family archive you can ask questions and get a reel for grandma. For vloggers, the daily cut without the editing night. Mastra agent, assistant-ui, Neon with Lakebase Search, AgentMail, Exa for the facts, and it is open source under MIT. Thank you."
+  }
+]

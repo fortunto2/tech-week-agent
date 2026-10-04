@@ -52,7 +52,7 @@ export async function probe(file: string): Promise<{ durationSecs: number; width
 }
 
 /** Decode at `fps` samples/second, 128 px wide, and score every frame with the engine. */
-export async function scoreFrames(file: string, opts: { fps?: number; width?: number } = {}): Promise<FrameScore[]> {
+export async function scoreFrames(file: string, opts: { fps?: number; width?: number; onFrame?: (f: FrameScore, i: number) => void } = {}): Promise<FrameScore[]> {
   const fps = opts.fps ?? 2;
   const w = opts.width ?? 128;
   const eng = await engine();
@@ -74,7 +74,9 @@ export async function scoreFrames(file: string, opts: { fps?: number; width?: nu
         let sr = 0, sg = 0, sb = 0;
         for (let p = 0; p < frame.length; p += 3) { sr += frame[p]; sg += frame[p + 1]; sb += frame[p + 2]; }
         const n = frame.length / 3;
-        out.push({ t, score: r.score, isGarbage: r.is_garbage, features: r.features, mean: { r: sr / n, g: sg / n, b: sb / n } });
+        const fs: FrameScore = { t, score: r.score, isGarbage: r.is_garbage, features: r.features, mean: { r: sr / n, g: sg / n, b: sb / n } };
+        out.push(fs);
+        opts.onFrame?.(fs, i);
         i++;
       }
     });
@@ -93,7 +95,12 @@ export async function momentsFromFrames(frames: FrameScore[], durationSecs: numb
   const scenes = JSON.parse(
     eng.detect_scenes_content(JSON.stringify({ pixels: frames.map((f) => f.mean), timestamps: frames.map((f) => f.t), duration: durationSecs })),
   ) as { scenes: [number, number][] };
-  const ranges = scenes.scenes?.length ? scenes.scenes : [[0, durationSecs] as [number, number]];
+  let ranges: [number, number][] = scenes.scenes?.length ? scenes.scenes : [[0, durationSecs]];
+  // A static clip gives one scene; split long ones into ~4 s windows so the shot table still ranks moments.
+  if (ranges.length <= 1 && durationSecs > 8) {
+    const n = Math.round(durationSecs / 4);
+    ranges = Array.from({ length: n }, (_, i) => [(i * durationSecs) / n, ((i + 1) * durationSecs) / n] as [number, number]);
+  }
   const rows: MomentRow[] = [];
   for (const [a, b] of ranges) {
     const fs = frames.filter((f) => f.t >= a && f.t < b);

@@ -18,6 +18,15 @@ const openai = () => createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const VISION_MODEL = "gpt-5.4-mini";
 const EMBED_MODEL = "text-embedding-3-small";
 
+export type Progress =
+  | { stage: "probe"; durationSecs: number; width: number; height: number; fps: number; hasAudio: boolean }
+  | { stage: "frame"; t: number; score: number; isGarbage: boolean; sharpness: number; colorfulness: number; brightness: number; stability: number }
+  | { stage: "shots"; shots: { startSecs: number; endSecs: number; score: number; bestFrameTs: number }[] }
+  | { stage: "whisper"; status: "start" | "done"; sentences?: { idx: number; text: string; start: number; end: number }[]; language?: string | null }
+  | { stage: "caption"; caption: string | null }
+  | { stage: "embeddings"; count: number }
+  | { stage: "done"; clip: IngestedClip };
+
 export type IngestedClip = {
   clipId: number;
   dayId: number;
@@ -64,7 +73,8 @@ async function captionFrame(file: string, ts: number, tmp: string): Promise<stri
 }
 
 /** Ingest one video file into the day whose folder contains it (the day row is created on first use). */
-export async function ingestClip(file: string, opts: { dayTitle?: string; source?: string } = {}): Promise<IngestedClip> {
+export async function ingestClip(file: string, opts: { dayTitle?: string; source?: string; onProgress?: (p: Progress) => void } = {}): Promise<IngestedClip> {
+  const emit = (p: Progress) => opts.onProgress?.(p);
   const folder = path.dirname(path.resolve(file));
   const base = path.basename(file);
   const tmp = await mkdtemp(path.join(os.tmpdir(), "l2f-ingest-"));
@@ -76,9 +86,18 @@ export async function ingestClip(file: string, opts: { dayTitle?: string; source
       .returning();
 
     const meta = await probe(file);
-    const [frames, stt] = await Promise.all([scoreFrames(file), meta.hasAudio ? transcribe(file, tmp) : Promise.resolve(null)]);
+    emit({ stage: "probe", durationSecs: meta.durationSecs, width: meta.width, height: meta.height, fps: meta.fps, hasAudio: meta.hasAudio });
+    if (meta.hasAudio) emit({ stage: "whisper", status: "start" });
+    const [frames, stt] = await Promise.all([
+      scoreFrames(file, {
+        onFrame: (f) => emit({ stage: "frame", t: f.t, score: f.score, isGarbage: f.isGarbage, sharpness: f.features.sharpness ?? 0, colorfulness: f.features.colorfulness ?? 0, brightness: f.features.brightness ?? 0, stability: f.features.stability ?? 0 }),
+      }),
+      meta.hasAudio ? transcribe(file, tmp) : Promise.resolve(null),
+    ]);
     const moments = await momentsFromFrames(frames, meta.durationSecs);
+    emit({ stage: "shots", shots: moments.map((m) => ({ startSecs: m.startSecs, endSecs: m.endSecs, score: m.score, bestFrameTs: m.bestFrameTs })) });
     const sentences = (stt?.segments ?? []).map((s) => ({ text: s.text.trim(), start: s.start, end: s.end, words: (s.words ?? []).map((w) => ({ text: w.word.trim(), start: w.start, end: w.end, confidence: w.probability })) })).filter((s) => s.text);
+    if (meta.hasAudio) emit({ stage: "whisper", status: "done", language: stt?.language ?? null, sentences: sentences.map((s, idx) => ({ idx, text: s.text, start: s.start, end: s.end })) });
     const overall = moments.length ? moments.reduce((a, m) => a + m.score * (m.endSecs - m.startSecs), 0) / Math.max(1, meta.durationSecs) : null;
 
     const [clip] = await db
@@ -102,12 +121,16 @@ export async function ingestClip(file: string, opts: { dayTitle?: string; source
       const bestIdx = moments.reduce((bi, m, i) => (!m.isGarbage && m.score > moments[bi].score ? i : bi), 0);
       bestFrameTs = moments[bestIdx].bestFrameTs;
       caption = await captionFrame(file, bestFrameTs, tmp);
+      emit({ stage: "caption", caption });
       if (caption) {
         const { embeddings } = await embedMany({ model: openai().textEmbeddingModel(EMBED_MODEL), values: [caption] });
         await db.execute(sql`update moments set caption = ${caption}, embedding = ${JSON.stringify(embeddings[0])}::vector where id = ${inserted[bestIdx].id}`);
       }
     }
-    return { clipId: clip.id, dayId: day.id, tag: clip.tag, file: base, durationSecs: meta.durationSecs, language: clip.language, sentences: sentences.length, moments: moments.length, caption, bestFrameTs, firstWords: sentences[0]?.text.slice(0, 80) ?? null };
+    emit({ stage: "embeddings", count: sentences.length + (caption ? 1 : 0) });
+    const result: IngestedClip = { clipId: clip.id, dayId: day.id, tag: clip.tag, file: base, durationSecs: meta.durationSecs, language: clip.language, sentences: sentences.length, moments: moments.length, caption, bestFrameTs, firstWords: sentences[0]?.text.slice(0, 80) ?? null };
+    emit({ stage: "done", clip: result });
+    return result;
   } finally {
     await rm(tmp, { recursive: true, force: true });
   }
