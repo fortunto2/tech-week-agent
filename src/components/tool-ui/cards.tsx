@@ -113,3 +113,30 @@ export function RulesCard({ rules }: { rules: { id: number; category: string; te
     </div>
   );
 }
+
+type Hit = { clipTag: string; dayTitle: string; idx: number; text: string; startSecs: number; shotAt: string | null; language: string | null; via: string };
+export function SearchCard({ r }: { r: { query: string; hits: Hit[] } }) {
+  const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Los_Angeles" }) : "");
+  return (
+    <div className="my-2 rounded-xl border border-border bg-card p-3 text-sm">
+      <div className="font-medium">
+        «{r.query}» · {r.hits.length} moments
+      </div>
+      <ol className="mt-2 space-y-1.5">
+        {r.hits.map((h, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="shrink-0 rounded bg-muted px-1 font-mono text-xs">
+              {h.clipTag} @{Math.round(h.startSecs)}s
+            </span>
+            <span className="min-w-0">
+              <span>{h.text}</span>
+              <span className="ml-1 text-xs text-muted-foreground">
+                {fmt(h.shotAt)} · {h.language} · {h.via}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}

@@ -81,3 +81,12 @@ acts, 28 shots with notes) → render → player → "первые 10 секун
 "Hook: fire/water/neon/face in the first 10 s, never an empty path" → opening re-cut → player.
 Then: a clip shot at Terra Gallery an hour ago, sent to the agent's email, appears in today's day index
 with its transcript.
+
+## Neon as the family memory (added 12:10)
+
+Every sentence said on camera has a 1536-d embedding (`sentences.embedding`, Lakebase `lakebase_ann` cosine
+index) and a Russian+English `tsvector` (`sentences.tsv`, `lakebase_bm25` index). `search_footage` fuses both
+with RRF (40 candidates each, k=60). `write_script(focus=[clip:idx…])` builds a film around search hits:
+"ролик для бабушки про дочку" = search → script → render. Next: `moments.caption` (VLM caption of each clip's
+best frame) + embedding, so "закат у океана" finds picture, not only speech. Audience: parents (family archive
+you can ask questions), vloggers (daily cut without the editing night).

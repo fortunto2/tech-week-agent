@@ -85,6 +85,7 @@ export const writeScript = createTool({
     brief: z.string().describe("what the owner asked for, e.g. 'трейлер недели в долине, 3 минуты, темп трейлерный'"),
     targetSecs: z.number().default(180),
     feedback: z.string().optional().describe("owner's correction to apply to the latest script"),
+    focus: z.array(z.string()).optional().describe("moments the film must be built around, as 'clipTag:sentenceIdx' refs from search_footage"),
   }),
   outputSchema: z.object({
     scriptId: z.number(),
@@ -97,7 +98,7 @@ export const writeScript = createTool({
     problems: z.array(z.string()),
     script: z.any(),
   }),
-  execute: async ({ dayId, brief, targetSecs, feedback }) => {
+  execute: async ({ dayId, brief, targetSecs, feedback, focus }) => {
     const [rules, day] = await Promise.all([activeRulesText(), dayText(dayId)]);
     const latest = await db.query.scripts.findFirst({ where: eq(schema.scripts.dayId, dayId), orderBy: desc(schema.scripts.version) });
     const previous = feedback && latest ? (latest.body as Script) : undefined;
@@ -105,7 +106,7 @@ export const writeScript = createTool({
     const { output } = await generateText({
       model: model("director"),
       output: Output.object({ schema: LlmScriptSchema }),
-      prompt: directorPrompt({ brief, rules, day: day.text, previous, feedback, targetSecs }),
+      prompt: directorPrompt({ brief: focus?.length ? `${brief}\n\nThe film is built around these moments (clip:sentence), every one of them must be a "say" shot: ${focus.join(", ")}` : brief, rules, day: day.text, previous, feedback, targetSecs }),
       maxOutputTokens: 12000,
     });
     const parsed = ScriptSchema.safeParse(toScript(output as LlmScript));
