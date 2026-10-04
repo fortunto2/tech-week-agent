@@ -85,3 +85,17 @@ side quest). Russian for talking to Rustam, English for code, README and pitch.
 
 No payments, no checkout, no card data, no captchas. Don't cancel/withdraw registrations without his
 explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name: 2–3 human sentences.
+
+## Plan and SDK notes (written 4.10 01:20, before kickoff — no code yet)
+
+- **`docs/plan.md`** is the plan: pitch, architecture, hour-by-hour schedule, verified SDK cheat sheet
+  (ai@^7, `@assistant-ui/ai-sdk`, `@neon/ai-sdk-provider`, Kernel/AgentMail/Exa/Executor/Sprites calls),
+  morning checklist, decisions log. Read it first after 10:30.
+- **Tech Week MCP is live**: `POST https://www.tech-week.com/api/mcp` (streamable HTTP JSON-RPC):
+  `search_events` (query, city[] slug "sf", date YYYY-MM-DD one day, theme keys), `list_filters`
+  (call first; a guessed key returns nothing), `get_event`, `get_event_links`. SF Tech Week 5–11 Oct.
+- **Neon AI Gateway needs a paid plan + prepaid credit** → claim the $500 before enabling it; fallback
+  LLM is the Anthropic key in `~/startups/active/solo-factory-studio/.env.local`.
+- Nothing sponsor-related exists locally: no Neon/Exa/Kernel/AgentMail keys, `fly` not logged in,
+  `neon` CLI not installed. Copyable: `solo-factory-studio/{drizzle.config.ts,db/}`,
+  `life2film/app/api/chat/route.ts`.
