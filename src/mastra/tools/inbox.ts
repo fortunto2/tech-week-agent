@@ -35,7 +35,18 @@ export const checkInbox = createTool({
     const inboxId = process.env.AGENTMAIL_INBOX;
     if (!inboxId || !process.env.AGENTMAIL_API_KEY) throw new Error("AGENTMAIL_INBOX / AGENTMAIL_API_KEY missing");
     const name = process.env.AGENTMAIL_PKG ?? "agentmail"; // non-literal: keep the SDK (and its optional @x402/fetch) out of the bundle
-    const { AgentMailClient } = await importAtRuntime<typeof import("agentmail")>(name);
+    // Typed loosely on purpose: a `typeof import("agentmail")` here is enough for Turbopack to trace the package.
+    type Client = {
+      inboxes: {
+        messages: {
+          list: (inboxId: string, o: { limit: number }) => Promise<unknown>;
+          get: (inboxId: string, id: string) => Promise<unknown>;
+          getAttachment: (inboxId: string, id: string, attId: string) => Promise<unknown>;
+          update: (inboxId: string, id: string, o: { addLabels: string[] }) => Promise<unknown>;
+        };
+      };
+    };
+    const { AgentMailClient } = await importAtRuntime<{ AgentMailClient: new (o: { apiKey?: string }) => Client }>(name);
     const client = new AgentMailClient({ apiKey: process.env.AGENTMAIL_API_KEY });
     const page = await client.inboxes.messages.list(inboxId, { limit });
     const msgs = (page as unknown as { messages?: { messageId: string; from: string; subject?: string; labels?: string[] }[] }).messages ?? [];
