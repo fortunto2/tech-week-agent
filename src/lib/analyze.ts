@@ -31,7 +31,7 @@ export function engine(): Promise<Engine> {
   return enginePromise;
 }
 
-export type FrameScore = { t: number; score: number; isGarbage: boolean; features: Record<string, number>; mean: { r: number; g: number; b: number } };
+export type FrameScore = { t: number; score: number; isGarbage: boolean; features: Record<string, number>; mean: { r: number; g: number; b: number }; motion: number };
 
 export async function probe(file: string): Promise<{ durationSecs: number; width: number; height: number; fps: number; shotAt: Date | null; hasAudio: boolean }> {
   const { stdout } = await execFileP("ffprobe", ["-v", "error", "-print_format", "json", "-show_format", "-show_streams", file]);
@@ -52,11 +52,11 @@ export async function probe(file: string): Promise<{ durationSecs: number; width
 }
 
 /** Decode at `fps` samples/second, 128 px wide, and score every frame with the engine. */
-export async function scoreFrames(file: string, opts: { fps?: number; width?: number; onFrame?: (f: FrameScore, i: number) => void } = {}): Promise<FrameScore[]> {
+export async function scoreFrames(file: string, opts: { fps?: number; width?: number; size?: { width: number; height: number }; onFrame?: (f: FrameScore, i: number) => void } = {}): Promise<FrameScore[]> {
   const fps = opts.fps ?? 2;
   const w = opts.width ?? 128;
   const eng = await engine();
-  const { width: W, height: H } = await probe(file);
+  const { width: W, height: H } = opts.size ?? (await probe(file));
   const h = Math.max(2, Math.round(((H || 9) / (W || 16)) * w / 2) * 2);
   const frameBytes = w * h * 3;
   const ff = spawn("ffmpeg", ["-v", "error", "-i", file, "-vf", `fps=${fps},scale=${w}:${h}`, "-f", "rawvideo", "-pix_fmt", "rgb24", "pipe:1"]);
@@ -74,7 +74,11 @@ export async function scoreFrames(file: string, opts: { fps?: number; width?: nu
         let sr = 0, sg = 0, sb = 0;
         for (let p = 0; p < frame.length; p += 3) { sr += frame[p]; sg += frame[p + 1]; sb += frame[p + 2]; }
         const n = frame.length / 3;
-        const fs: FrameScore = { t, score: r.score, isGarbage: r.is_garbage, features: r.features, mean: { r: sr / n, g: sg / n, b: sb / n } };
+        const mean = { r: sr / n, g: sg / n, b: sb / n };
+        // Frame-to-frame change of the mean colour, 0..1: a cheap temporal signal `score_frame` (single frame) cannot give.
+        const prev = out[out.length - 1]?.mean;
+        const motion = prev ? Math.min(1, (Math.abs(mean.r - prev.r) + Math.abs(mean.g - prev.g) + Math.abs(mean.b - prev.b)) / 96) : 0;
+        const fs: FrameScore = { t, score: r.score, isGarbage: r.is_garbage, features: r.features, mean, motion };
         out.push(fs);
         opts.onFrame?.(fs, i);
         i++;
@@ -95,11 +99,13 @@ export async function momentsFromFrames(frames: FrameScore[], durationSecs: numb
   const scenes = JSON.parse(
     eng.detect_scenes_content(JSON.stringify({ pixels: frames.map((f) => f.mean), timestamps: frames.map((f) => f.t), duration: durationSecs })),
   ) as { scenes: [number, number][] };
-  let ranges: [number, number][] = scenes.scenes?.length ? scenes.scenes : [[0, durationSecs]];
-  // A static clip gives one scene; split long ones into ~4 s windows so the shot table still ranks moments.
-  if (ranges.length <= 1 && durationSecs > 8) {
-    const n = Math.round(durationSecs / 4);
-    ranges = Array.from({ length: n }, (_, i) => [(i * durationSecs) / n, ((i + 1) * durationSecs) / n] as [number, number]);
+  const detected: [number, number][] = scenes.scenes?.length ? scenes.scenes : [[0, durationSecs]];
+  // Any range longer than 8 s is split into ~4 s windows: a shot is a unit a script can pick, not a whole scene.
+  const ranges: [number, number][] = [];
+  for (const [a, b] of detected) {
+    const len = b - a;
+    const n = len > 8 ? Math.round(len / 4) : 1;
+    for (let i = 0; i < n; i++) ranges.push([a + (i * len) / n, a + ((i + 1) * len) / n]);
   }
   const rows: MomentRow[] = [];
   for (const [a, b] of ranges) {

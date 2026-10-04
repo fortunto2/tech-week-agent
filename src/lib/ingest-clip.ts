@@ -20,7 +20,7 @@ const EMBED_MODEL = "text-embedding-3-small";
 
 export type Progress =
   | { stage: "probe"; durationSecs: number; width: number; height: number; fps: number; hasAudio: boolean }
-  | { stage: "frame"; t: number; score: number; isGarbage: boolean; sharpness: number; colorfulness: number; brightness: number; stability: number }
+  | { stage: "frame"; t: number; score: number; isGarbage: boolean; sharpness: number; colorfulness: number; brightness: number; motion: number }
   | { stage: "shots"; shots: { startSecs: number; endSecs: number; score: number; bestFrameTs: number }[] }
   | { stage: "whisper"; status: "start" | "done"; sentences?: { idx: number; text: string; start: number; end: number }[]; language?: string | null }
   | { stage: "caption"; caption: string | null }
@@ -90,7 +90,8 @@ export async function ingestClip(file: string, opts: { dayTitle?: string; source
     if (meta.hasAudio) emit({ stage: "whisper", status: "start" });
     const [frames, stt] = await Promise.all([
       scoreFrames(file, {
-        onFrame: (f) => emit({ stage: "frame", t: f.t, score: f.score, isGarbage: f.isGarbage, sharpness: f.features.sharpness ?? 0, colorfulness: f.features.colorfulness ?? 0, brightness: f.features.brightness ?? 0, stability: f.features.stability ?? 0 }),
+        size: { width: meta.width, height: meta.height },
+        onFrame: (f) => emit({ stage: "frame", t: f.t, score: f.score, isGarbage: f.isGarbage, sharpness: f.features.sharpness ?? 0, colorfulness: f.features.colorfulness ?? 0, brightness: f.features.brightness ?? 0, motion: f.motion }),
       }),
       meta.hasAudio ? transcribe(file, tmp) : Promise.resolve(null),
     ]);

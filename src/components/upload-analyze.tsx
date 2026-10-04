@@ -3,11 +3,13 @@
 // shots are found, whisper lines appear, the vision caption lands, embeddings are written. Nothing here is
 // animated for show; every number is an event from /api/analyze.
 import { useRef, useState } from "react";
+import type { IngestedClip, Progress } from "@/lib/ingest-clip";
 
-type Frame = { t: number; score: number; isGarbage: boolean; sharpness: number; colorfulness: number; brightness: number; stability: number };
-type Shot = { startSecs: number; endSecs: number; score: number; bestFrameTs: number };
-type Line = { idx: number; text: string; start: number; end: number };
-type Done = { tag: string; durationSecs: number; language: string | null; sentences: number; moments: number; caption: string | null; dayId: number };
+type Frame = Extract<Progress, { stage: "frame" }>;
+type Shot = Extract<Progress, { stage: "shots" }>["shots"][number];
+type Line = NonNullable<Extract<Progress, { stage: "whisper" }>["sentences"]>[number];
+type Done = IngestedClip;
+type Event = Progress | { stage: "error"; message: string };
 
 type State = {
   file?: string;
@@ -75,7 +77,7 @@ export function UploadAnalyze() {
         buf = lines.pop() ?? "";
         for (const line of lines) {
           if (!line.trim()) continue;
-          const ev = JSON.parse(line);
+          const ev = JSON.parse(line) as Event;
           setSt((s) => {
             switch (ev.stage) {
               case "probe": return { ...s, meta: ev };
@@ -113,6 +115,7 @@ export function UploadAnalyze() {
           {st.meta && ` · ${Math.round(st.meta.durationSecs)} s · ${st.meta.width}×${st.meta.height} · ${st.meta.fps.toFixed(0)} fps`}
         </span>
       </div>
+      {st.error && <div className="mt-1 text-xs text-destructive">{st.error}</div>}
       {(st.frames.length > 0 || st.whisper) && (
         <div className="mt-2 grid gap-2 md:grid-cols-[1fr_220px]">
           <div>
@@ -137,14 +140,13 @@ export function UploadAnalyze() {
               {st.caption && <div className="text-xs"><span className="text-muted-foreground">camera saw: </span>{st.caption}</div>}
               {st.embeddings !== undefined && <div className="text-xs text-muted-foreground">embeddings written: {st.embeddings} → Neon</div>}
               {st.done && <div className="text-xs font-medium text-emerald-600">clip {st.done.tag} ingested · ask the director about it</div>}
-              {st.error && <div className="text-xs text-destructive">{st.error}</div>}
             </div>
           </div>
           <div className="space-y-1.5">
             <Meter label="sharpness" value={avg("sharpness")} />
             <Meter label="colourfulness" value={avg("colorfulness")} />
             <Meter label="brightness" value={avg("brightness")} />
-            <Meter label="stability" value={avg("stability")} />
+            <Meter label="motion" value={avg("motion")} />
             <Meter label="quality (mean)" value={avg("score")} />
           </div>
         </div>
