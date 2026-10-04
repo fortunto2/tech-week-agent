@@ -1,9 +1,9 @@
 # Dev recipe — Tech Week Agent (4 Oct 2026)
 
-Source of truth: the sponsor skills in `~/.claude/skills/` (assistant-ui `setup/tools/runtime`, `mastra`,
-`neon*`, `kernel-typescript-sdk`, `agentmail`, `build-with-exa`, `sprites`, `next-best-practices`) plus the
-pages they point to (mastra.ai `*.md`, neon.com drizzle guide, fly.io Next.js guide). Where a skill and
-`docs/plan.md` disagree, this file wins. Anything not covered by a skill is marked **UNVERIFIED**.
+Source of truth: the sponsor skills in `~/.claude/skills/` (assistant-ui `setup/tools`, `mastra`, `neon*`,
+`kernel-typescript-sdk`, `agentmail`, `build-with-exa`, `sprites`, `next-best-practices`) plus the pages they point
+to (mastra.ai `*.md`, neon.com drizzle guide, fly.io Next.js guide). Where a skill and `docs/plan.md` disagree,
+this file wins. Anything a skill does not cover is marked **UNVERIFIED**.
 
 ## 0. Version drift to respect
 
@@ -21,8 +21,7 @@ pnpm dlx create-next-app@latest tech-week-agent --yes --ts --eslint --tailwind -
 cd tech-week-agent
 
 # 2. assistant-ui into the existing app (-y for non-TTY). Adds @assistant-ui/react, @assistant-ui/ai-sdk, ai@^7, @ai-sdk/react@^4, the Thread element.
-npx assistant-ui@latest init -y
-pnpm add @assistant-ui/react @assistant-ui/ai-sdk ai@^7 @ai-sdk/react@^4 zod@^4   # idempotent safety net
+npx assistant-ui@latest init -y     # if it skipped any: pnpm add @assistant-ui/react @assistant-ui/ai-sdk ai@^7 @ai-sdk/react@^4 zod@^4
 npx assistant-ui@latest add thread tool-fallback tool-group && npx assistant-ui@latest doctor
 
 # 3. Mastra (full-stack in-process; no separate server)
