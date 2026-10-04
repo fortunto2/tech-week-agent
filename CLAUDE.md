@@ -104,7 +104,7 @@ explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name:
 
 ## Accounts (set up 09:10–09:40, all on rust.starman@gmail.com via Google)
 
-- Portal team: "Tech Week Agent", captain, team page id `8061ba88-264c-42b0-b70d-28a7a1516971`.
+- Portal team: "SuperDuperAI" (project Tech Week Agent), captain, team page id `8061ba88-264c-42b0-b70d-28a7a1516971`.
 - Neon: org "Rust" (`org-spring-mouse-40959188`), project `techweek` = `twilight-bread-20532873`,
   region aws-us-east-2, branch `production`. `neon` CLI 8.0.7 authed. `DATABASE_URL` in `.env.local`.
   AI Gateway not enabled yet (free plan; claim the $500 on /stack first, then enable in the console).
