@@ -45,10 +45,13 @@ export async function searchFootage(query: string, opts: { k?: number; dayId?: n
     ),
     keyword_ranked as (
       select id, rank() over (order by score) as rank from (
-        select s.id, s.tsv <@> to_bm25query(to_tsvector('russian', ${query}) || to_tsvector('english', ${query}), 'sentences_tsv_bm25'::regclass) as score
-        from sentences s join clips c on c.id = s.clip_id
-        where s.tsv @@ (plainto_tsquery('russian', ${query}) || plainto_tsquery('english', ${query})) ${dayFilter}
-        order by score fetch first 40 rows with ties
+        select id, score from (
+          select s.id, s.tsv <@> to_bm25query(to_tsvector('russian', ${query}) || to_tsvector('english', ${query}), 'sentences_tsv_bm25'::regclass) as score
+          from sentences s join clips c on c.id = s.clip_id
+          where true ${dayFilter}
+        ) scored
+        where score < 0
+        order by score fetch first 40 rows only
       ) kw
     )
     select s.id as sentence_id, s.clip_id, c.tag as clip_tag, c.day_id, d.title as day_title, s.idx, s.text,
