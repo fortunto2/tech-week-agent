@@ -11,6 +11,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { sql } from "drizzle-orm";
 import { db } from "../src/db";
+import { isOnDisk } from "../src/lib/sidecars";
 
 const execFileP = promisify(execFile);
 const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -37,6 +38,7 @@ async function main() {
 
   const work = async (r: Row) => {
     const jpg = path.join(tmp, `${r.tag}.jpg`);
+    if (!(await isOnDisk(path.join(r.folder, r.file)))) { done++; return; } // evicted to iCloud: never trigger a download
     try {
       await execFileP("ffmpeg", ["-y", "-v", "error", "-ss", String(r.ts), "-i", path.join(r.folder, r.file), "-frames:v", "1", "-vf", "scale=768:-2", "-q:v", "4", jpg]);
       const image = await readFile(jpg);

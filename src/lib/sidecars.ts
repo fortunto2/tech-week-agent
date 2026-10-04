@@ -109,15 +109,35 @@ export async function readOtio(folder: string, file: string): Promise<OtioSummar
   };
 }
 
-/** Shot time from the container (`creation_time`), the only clock the cameras agree on. */
-export async function clipShotAt(folder: string, file: string): Promise<Date | null> {
+/** An archived day is a symlink into iCloud Drive; an evicted clip has a size but no blocks on disk. Reading it would download it. */
+export async function isOnDisk(file: string): Promise<boolean> {
+  try {
+    const s = await stat(file);
+    return s.blocks > 0 || s.size === 0;
+  } catch {
+    return false;
+  }
+}
+
+/** DJI names carry the camera's local time: DJI_20260916230635_0564_D → 2026-09-16 23:06:35 in `tzOffsetHours`. */
+export function shotAtFromName(file: string, tzOffsetHours: number): Date | null {
+  const m = file.match(/(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);
+  if (!m) return null;
+  const [, y, mo, d, h, mi, s] = m.map(Number);
+  return new Date(Date.UTC(y, mo - 1, d, h - tzOffsetHours, mi, s));
+}
+
+/** Shot time from the container (`creation_time`), the only clock the cameras agree on; the filename when the clip is evicted. */
+export async function clipShotAt(folder: string, file: string, tzOffsetHours = -7): Promise<Date | null> {
+  const full = path.join(folder, file);
+  if (!(await isOnDisk(full))) return shotAtFromName(file, tzOffsetHours);
   try {
     const { stdout } = await execFileP("ffprobe", [
-      "-v", "error", "-show_entries", "format_tags=creation_time", "-of", "csv=p=0", path.join(folder, file),
+      "-v", "error", "-show_entries", "format_tags=creation_time", "-of", "csv=p=0", full,
     ]);
     const s = stdout.trim();
-    return s ? new Date(s) : null;
+    return s ? new Date(s) : shotAtFromName(file, tzOffsetHours);
   } catch {
-    return null;
+    return shotAtFromName(file, tzOffsetHours);
   }
 }

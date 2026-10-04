@@ -9,11 +9,12 @@ import { db, schema } from "../src/db";
 import { clipShotAt, clipTag, listClips, readOtio, readStt } from "../src/lib/sidecars";
 
 async function main() {
-  const [folderArg, titleArg] = process.argv.slice(2);
+  const [folderArg, titleArg, tzArg] = process.argv.slice(2);
   if (!folderArg) {
-    console.error("usage: pnpm ingest <folder> [title]");
+    console.error("usage: pnpm ingest <folder> [title] [tzOffsetHours for filename times, e.g. -5 for Chicago]");
     process.exit(2);
   }
+  const tz = tzArg ? Number(tzArg) : -7;
   const folder = path.resolve(folderArg.replace(/^~/, process.env.HOME ?? ""));
   const title = titleArg ?? path.basename(folder);
   const files = await listClips(folder);
@@ -36,7 +37,7 @@ async function main() {
   let shotTo: Date | null = null;
 
   for (const file of files) {
-    const [stt, otio, shotAt] = await Promise.all([readStt(folder, file), readOtio(folder, file), clipShotAt(folder, file)]);
+    const [stt, otio, shotAt] = await Promise.all([readStt(folder, file), readOtio(folder, file), clipShotAt(folder, file, tz)]);
     if (shotAt) {
       if (!shotFrom || shotAt < shotFrom) shotFrom = shotAt;
       if (!shotTo || shotAt > shotTo) shotTo = shotAt;
