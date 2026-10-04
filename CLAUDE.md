@@ -118,3 +118,10 @@ explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name:
 - Sponsor skills installed globally for Claude Code: neon, neon-postgres, neon-ai-gateway, mastra,
   build-with-exa, exa-search, kernel-typescript-sdk, kernel-agent-browser, sprites, assistant-ui (+setup,
   runtime, tools, streaming, generative-ui), agentmail, agentmail-toolkit.
+
+## Decisions 09:30 (Rustam)
+
+- Code starts at 10:30, not before. LLM: Anthropic (`ANTHROPIC_API_KEY`) now, switch to Neon AI Gateway
+  once the $500 claim enables it (one env var). RSVP forms use the name **Rustam Salavatov** and the
+  agent inbox rust-6252@agentmail.to; real registrations on 3 free open Luma events 5–6 Oct.
+  Travel-time base for the brief: SoMa, 511 Harrison St (37.7857, -122.3947).
