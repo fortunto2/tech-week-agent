@@ -101,3 +101,20 @@ explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name:
 - Nothing sponsor-related exists locally: no Neon/Exa/Kernel/AgentMail keys, `fly` not logged in,
   `neon` CLI not installed. Copyable: `solo-factory-studio/{drizzle.config.ts,db/}`,
   `life2film/app/api/chat/route.ts`.
+
+## Accounts (set up 09:10–09:40, all on rust.starman@gmail.com via Google)
+
+- Portal team: "Tech Week Agent", captain, team page id `8061ba88-264c-42b0-b70d-28a7a1516971`.
+- Neon: org "Rust" (`org-spring-mouse-40959188`), project `techweek` = `twilight-bread-20532873`,
+  region aws-us-east-2, branch `production`. `neon` CLI 8.0.7 authed. `DATABASE_URL` in `.env.local`.
+  AI Gateway not enabled yet (free plan; claim the $500 on /stack first, then enable in the console).
+- Exa: team "Rust Starman's Personal", key `techweek`, $20 credit shown. `EXA_API_KEY` in `.env.local`.
+- Kernel: org `techweek`, project Default, org-wide key `techweek` (30 days). `KERNEL_API_KEY` in `.env.local`.
+- AgentMail: org "Rust's organization", inbox **rust-6252@agentmail.to** (free: 3 inboxes).
+  `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX` in `.env.local`.
+- Fly.io: new account rust-starman, `fly` CLI authed. **Needs a credit card (or the $500 claim) before
+  `fly deploy` works** — fly.io/dashboard/rust-starman/billing.
+- GitHub: public repo `fortunto2/tech-week-agent` (this directory), MIT to add with the code.
+- Sponsor skills installed globally for Claude Code: neon, neon-postgres, neon-ai-gateway, mastra,
+  build-with-exa, exa-search, kernel-typescript-sdk, kernel-agent-browser, sprites, assistant-ui (+setup,
+  runtime, tools, streaming, generative-ui), agentmail, agentmail-toolkit.
