@@ -1,0 +1,4 @@
+docs/screens/video
+.playwright-mcp
+.next-build
+*.webm
