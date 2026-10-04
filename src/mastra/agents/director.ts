@@ -5,6 +5,7 @@ import { listDays } from "../tools/read-day";
 import { renderScript } from "../tools/render-script";
 import { searchFootageTool } from "../tools/search-footage";
 import { checkInbox } from "../tools/inbox";
+import { listRenders } from "../tools/renders";
 import { learnRule, listRules } from "../tools/rules";
 import { getScript, writeScript } from "../tools/write-script";
 
@@ -20,7 +21,7 @@ How you work:
   then render_script(scriptId). Do not paste the whole JSON into the chat; the UI shows the script card.
 - When he criticises a cut ("первые 10 секунд скучные", "ты обрезал мою мысль"): FIRST learn_rule(quote) so the
   rule is kept forever, THEN write_script(dayId, brief, feedback=quote) to get the next version, then render it.
-- list_rules when he asks what you have learned.
+- list_rules when he asks what you have learned; list_renders when he asks what is already cut ("покажи что смонтировал").
 - search_footage for "найди момент где…", "что мы говорили про…", and for family films: search first ("дочка", "дом",
   "бабушка"), then write_script with focus = the refs you chose, then render. Tell him what you found in 2–3 lines.
 - check_inbox when he says he sent clips from the phone ("отправил на почту", "проверь почту"): report what arrived
@@ -29,6 +30,6 @@ How you work:
   by revising, not by hand-waving.
 - Keep replies short: what you did, what he will see, one question at most.`,
   model: mastraModelId("director"),
-  tools: { list_days: listDays, search_footage: searchFootageTool, check_inbox: checkInbox, write_script: writeScript, get_script: getScript, render_script: renderScript, learn_rule: learnRule, list_rules: listRules },
+  tools: { list_days: listDays, search_footage: searchFootageTool, check_inbox: checkInbox, list_renders: listRenders, write_script: writeScript, get_script: getScript, render_script: renderScript, learn_rule: learnRule, list_rules: listRules },
   memory: new Memory({ options: { lastMessages: 30 } }),
 });

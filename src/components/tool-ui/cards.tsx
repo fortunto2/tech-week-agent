@@ -182,3 +182,23 @@ export function InboxCard({ r }: { r: { inbox: string; checked: number; ingested
     </div>
   );
 }
+
+type RenderRow = { renderId: number; version: number; dayTitle: string; about: string; status: string; durationSecs: number | null; mediaUrl: string | null };
+export function RendersCard({ renders }: { renders: RenderRow[] }) {
+  return (
+    <div className="my-2 grid gap-2">
+      {renders.map((r) => (
+        <div key={r.renderId} className="overflow-hidden rounded-xl border border-border bg-card text-sm">
+          {r.mediaUrl && <video src={r.mediaUrl} controls preload="metadata" playsInline className="aspect-video w-full bg-black" />}
+          <div className="p-3">
+            <div className="flex items-baseline justify-between">
+              <span className="font-medium">{r.dayTitle} · v{r.version}</span>
+              <span className="text-muted-foreground">{r.durationSecs ? `${Math.floor(r.durationSecs / 60)}:${String(Math.round(r.durationSecs % 60)).padStart(2, "0")}` : r.status}</span>
+            </div>
+            <p className="mt-1 italic text-muted-foreground">{r.about}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
