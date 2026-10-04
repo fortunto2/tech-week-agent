@@ -202,3 +202,30 @@ export function RendersCard({ renders }: { renders: RenderRow[] }) {
     </div>
   );
 }
+
+export function DescriptionCard({ r }: { r: { title: string; description: string; chapters: { at: string; name: string }[]; tags: string[]; facts: { title: string; url: string }[] } }) {
+  return (
+    <div className="my-2 rounded-xl border border-border bg-card p-3 text-sm">
+      <div className="text-base font-semibold">{r.title}</div>
+      <p className="mt-1 whitespace-pre-line text-muted-foreground">{r.description}</p>
+      <ul className="mt-2 space-y-0.5">
+        {r.chapters.map((c, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="w-10 shrink-0 font-mono text-xs text-muted-foreground">{c.at}</span>
+            <span>{c.name}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-2 flex flex-wrap gap-1">
+        {r.tags.map((t) => (
+          <span key={t} className="rounded bg-muted px-1.5 py-0.5 text-xs">#{t}</span>
+        ))}
+      </div>
+      {r.facts.length > 0 && (
+        <div className="mt-2 text-xs text-muted-foreground">
+          facts via Exa: {r.facts.map((f, i) => (<a key={i} href={f.url} target="_blank" rel="noreferrer" className="underline mr-2">{f.title || f.url}</a>))}
+        </div>
+      )}
+    </div>
+  );
+}
