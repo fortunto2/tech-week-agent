@@ -35,7 +35,7 @@ MIT licensed.
 |---|---|---|
 | ![live analysis](docs/screens/live-analysis-done.png) | ![search](docs/screens/search-card.png) | ![renders](docs/screens/renders-rules.png) |
 
-Demo video (3 min): https://youtu.be/q82Q4302cio
+Demo video (3 min): https://youtu.be/9c_1wPj-eaI
 
 ## Stack (hack sponsors, each doing a real job)
 
@@ -49,6 +49,12 @@ Demo video (3 min): https://youtu.be/q82Q4302cio
 | Exa | event / venue facts for captions and descriptions (next) |
 | Kernel | posting the reel through a real browser (next) |
 | Fly.io | hosting; renders as sprites (next) |
+
+## Use it from your own agent (skill)
+
+`skills/life2film-director/SKILL.md` is an agent skill: install with `npx skills add fortunto2/tech-week-agent`
+(or point your agent at the file) and it gets the five install commands, the tool table and the failure
+messages. The tools in `src/mastra/tools` are plain Mastra `createTool`s and work in any Mastra agent.
 
 ## Run
 
