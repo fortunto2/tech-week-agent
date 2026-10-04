@@ -156,3 +156,29 @@ export function SearchCard({ r }: { r: { query: string; hits: Hit[]; pictures?: 
     </div>
   );
 }
+
+type Ingested = { from: string; subject: string; file: string; tag: string; durationSecs: number; language: string | null; sentences: number; moments: number; caption: string | null; firstWords: string | null };
+export function InboxCard({ r }: { r: { inbox: string; checked: number; ingested: Ingested[]; skipped: string[] } }) {
+  return (
+    <div className="my-2 rounded-xl border border-border bg-card p-3 text-sm">
+      <div className="flex items-baseline justify-between">
+        <span className="font-medium">{r.inbox}</span>
+        <span className="text-muted-foreground">{r.checked} messages · {r.ingested.length} clips ingested</span>
+      </div>
+      <ul className="mt-2 space-y-2">
+        {r.ingested.map((c, i) => (
+          <li key={i} className="rounded-lg bg-muted/50 p-2">
+            <div className="flex gap-2">
+              <span className="shrink-0 rounded bg-emerald-500/15 px-1 font-mono text-xs">{c.tag}</span>
+              <span className="truncate">{c.file}</span>
+              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{Math.round(c.durationSecs)} s · {c.language ?? "silent"} · {c.sentences} lines · {c.moments} shots</span>
+            </div>
+            {c.firstWords && <div className="mt-1">«{c.firstWords}…»</div>}
+            {c.caption && <div className="mt-0.5 text-xs text-muted-foreground">{c.caption}</div>}
+          </li>
+        ))}
+      </ul>
+      {r.skipped.length > 0 && <div className="mt-2 text-xs text-muted-foreground">skipped: {r.skipped.join("; ")}</div>}
+    </div>
+  );
+}

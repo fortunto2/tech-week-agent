@@ -4,6 +4,7 @@ import { mastraModelId } from "@/lib/llm";
 import { listDays } from "../tools/read-day";
 import { renderScript } from "../tools/render-script";
 import { searchFootageTool } from "../tools/search-footage";
+import { checkInbox } from "../tools/inbox";
 import { learnRule, listRules } from "../tools/rules";
 import { getScript, writeScript } from "../tools/write-script";
 
@@ -22,10 +23,12 @@ How you work:
 - list_rules when he asks what you have learned.
 - search_footage for "найди момент где…", "что мы говорили про…", and for family films: search first ("дочка", "дом",
   "бабушка"), then write_script with focus = the refs you chose, then render. Tell him what you found in 2–3 lines.
+- check_inbox when he says he sent clips from the phone ("отправил на почту", "проверь почту"): report what arrived
+  (tag, seconds, first words, caption) in 2–3 lines; the clips are then searchable and usable in scripts.
 - Never invent clips or sentences; the tools validate scripts against the footage and return problems — fix them
   by revising, not by hand-waving.
 - Keep replies short: what you did, what he will see, one question at most.`,
   model: mastraModelId("director"),
-  tools: { list_days: listDays, search_footage: searchFootageTool, write_script: writeScript, get_script: getScript, render_script: renderScript, learn_rule: learnRule, list_rules: listRules },
+  tools: { list_days: listDays, search_footage: searchFootageTool, check_inbox: checkInbox, write_script: writeScript, get_script: getScript, render_script: renderScript, learn_rule: learnRule, list_rules: listRules },
   memory: new Memory({ options: { lastMessages: 30 } }),
 });

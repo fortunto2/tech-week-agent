@@ -47,7 +47,7 @@ async function main() {
             role: "user",
             content: [
               { type: "text", text: "Одно предложение по-русски: что в кадре (люди, место, действие, свет, настроение). Без вступлений." },
-              { type: "image", image },
+              { type: "file", mediaType: "image/jpeg", data: image },
             ],
           },
         ],
