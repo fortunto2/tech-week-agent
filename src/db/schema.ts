@@ -36,7 +36,8 @@ export const clips = pgTable(
     overallScore: doublePrecision("overall_score"),
     isVertical: boolean("is_vertical").default(false),
     resolution: text("resolution"),
-    source: text("source").default("folder"), // folder | agentmail
+    source: text("source").default("folder"), // folder | agentmail | upload
+    hasAudio: boolean("has_audio"), // null = unknown (no sidecar); false = a walk cannot use this clip
   },
   (t) => [uniqueIndex("clips_day_file").on(t.dayId, t.file)],
 );

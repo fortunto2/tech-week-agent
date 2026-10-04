@@ -107,8 +107,8 @@ export async function ingestClip(file: string, opts: { dayTitle?: string; source
 
     const [clip] = await db
       .insert(schema.clips)
-      .values({ dayId: day.id, tag: clipTag(base), file: base, shotAt: meta.shotAt, durationSecs: meta.durationSecs, language: sentences.length ? (stt?.language ?? null) : null, overallScore: overall, isVertical: meta.height > meta.width, resolution: `${meta.width}x${meta.height}`, source: opts.source ?? "folder" })
-      .onConflictDoUpdate({ target: [schema.clips.dayId, schema.clips.file], set: { shotAt: meta.shotAt, durationSecs: meta.durationSecs, language: sentences.length ? (stt?.language ?? null) : null, overallScore: overall, source: opts.source ?? "folder" } })
+      .values({ dayId: day.id, tag: clipTag(base), file: base, shotAt: meta.shotAt, durationSecs: meta.durationSecs, language: sentences.length ? (stt?.language ?? null) : null, overallScore: overall, isVertical: meta.height > meta.width, resolution: `${meta.width}x${meta.height}`, source: opts.source ?? "folder", hasAudio: meta.hasAudio })
+      .onConflictDoUpdate({ target: [schema.clips.dayId, schema.clips.file], set: { shotAt: meta.shotAt, durationSecs: meta.durationSecs, language: sentences.length ? (stt?.language ?? null) : null, overallScore: overall, source: opts.source ?? "folder", hasAudio: meta.hasAudio } })
       .returning();
     await db.delete(schema.sentences).where(eq(schema.sentences.clipId, clip.id));
     await db.delete(schema.moments).where(eq(schema.moments.clipId, clip.id));

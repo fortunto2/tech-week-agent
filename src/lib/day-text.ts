@@ -79,7 +79,7 @@ export async function dayText(dayId: number, opts: { maxChars?: number } = {}): 
 }
 
 /** Which clip tags and sentence counts exist, so a script can be validated before it is saved. */
-export async function dayIndex(dayId: number): Promise<Map<string, { sentences: number; durationSecs: number }>> {
+export async function dayIndex(dayId: number): Promise<Map<string, { sentences: number; durationSecs: number; hasAudio: boolean | null }>> {
   const cs = await db.select().from(schema.clips).where(eq(schema.clips.dayId, dayId));
   const ids = cs.map((c) => c.id);
   const counts = new Map<number, number>();
@@ -87,7 +87,7 @@ export async function dayIndex(dayId: number): Promise<Map<string, { sentences: 
     const ss = await db.select({ clipId: schema.sentences.clipId }).from(schema.sentences).where(inArray(schema.sentences.clipId, ids));
     for (const s of ss) counts.set(s.clipId, (counts.get(s.clipId) ?? 0) + 1);
   }
-  const out = new Map<string, { sentences: number; durationSecs: number }>();
-  for (const c of cs) out.set(c.tag, { sentences: counts.get(c.id) ?? 0, durationSecs: c.durationSecs ?? 0 });
+  const out = new Map<string, { sentences: number; durationSecs: number; hasAudio: boolean | null }>();
+  for (const c of cs) out.set(c.tag, { sentences: counts.get(c.id) ?? 0, durationSecs: c.durationSecs ?? 0, hasAudio: c.hasAudio });
   return out;
 }

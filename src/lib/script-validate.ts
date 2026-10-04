@@ -4,10 +4,16 @@ import { dayIndex } from "./day-text";
 /** Pull indices and seconds back inside the footage: an off-by-one from the model must not kill a render. */
 export async function clampScriptToDay(dayId: number, script: Script): Promise<Script> {
   const idx = await dayIndex(dayId);
-  const shots = script.shots.map((s) => {
+  const shots = script.shots.flatMap((s) => {
     const c = idx.get(s.clip);
-    if (!c) return s;
+    if (!c) return [s];
+    // A clip that was never analysed (no duration) cannot be cut; a walk needs the clip's own sound.
+    if (!c.durationSecs) return [];
     const out = { ...s };
+    if (out.walk !== undefined && c.hasAudio === false) {
+      out.show = out.walk;
+      delete out.walk;
+    }
     if (out.say && c.sentences > 0) {
       const max = c.sentences - 1;
       out.say = [Math.min(out.say[0], max), Math.min(out.say[1], max)];
@@ -21,7 +27,7 @@ export async function clampScriptToDay(dayId: number, script: Script): Promise<S
       else out.walk = start;
       out.len = Math.min(len, Math.max(0.5, c.durationSecs - start));
     }
-    return out;
+    return [out];
   });
   const open = script.open
     ? { shots: script.open.shots.map((o) => { const c = idx.get(o.clip); if (!c || !c.durationSecs) return o; const at = Math.max(0, Math.min(o.at, c.durationSecs - o.len)); return { ...o, at }; }) }

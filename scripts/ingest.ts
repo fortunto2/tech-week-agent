@@ -54,10 +54,11 @@ async function main() {
         overallScore: otio?.overallScore ?? null,
         isVertical: otio?.isVertical ?? false,
         resolution: otio?.resolution ?? null,
+        hasAudio: otio?.hasAudio ?? null,
       })
       .onConflictDoUpdate({
         target: [schema.clips.dayId, schema.clips.file],
-        set: { shotAt, language: stt?.sentences.length ? stt.language : null, overallScore: otio?.overallScore ?? null },
+        set: { shotAt, language: stt?.sentences.length ? stt.language : null, overallScore: otio?.overallScore ?? null, hasAudio: otio?.hasAudio ?? null },
       })
       .returning();
 

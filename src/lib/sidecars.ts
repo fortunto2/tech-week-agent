@@ -28,6 +28,7 @@ export type OtioSegment = {
 };
 
 export type OtioSummary = {
+  hasAudio: boolean | null;
   overallScore: number | null;
   durationSecs: number | null;
   isVertical: boolean;
@@ -101,6 +102,7 @@ export async function readOtio(folder: string, file: string): Promise<OtioSummar
     }
   }
   return {
+    hasAudio: typeof va.has_audio === "boolean" ? va.has_audio : null,
     overallScore: typeof va.overall_score === "number" ? va.overall_score : null,
     durationSecs: typeof va.duration_secs === "number" ? va.duration_secs : null,
     isVertical: Boolean(va.is_vertical),
