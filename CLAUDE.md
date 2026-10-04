@@ -86,6 +86,18 @@ side quest). Russian for talking to Rustam, English for code, README and pitch.
 No payments, no checkout, no card data, no captchas. Don't cancel/withdraw registrations without his
 explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name: 2–3 human sentences.
 
+## PIVOT 4.10 11:20 — Life2Film Director (read `docs/plan-v2-reel-agent.md`)
+
+The product is no longer the conference concierge. It is **a personal film director**: the owner's day of
+footage → script → trailer, learning his taste from every correction. Reuses `life2film/video-analyzer`
+(sidecars `.va.stt.json` / `.MP4.va.otio`, `scripts/vlog_cut.py`, release binary at
+`~/.cargo-target/release/video-analyzer`) and the rules in `~/Movies/!usa/agent-port-notes.md`.
+Stack as planned: Neon (schema in `src/db/schema.ts`), Mastra agent `director` (`src/mastra`), assistant-ui
+cards (`src/app/tool-ui.tsx`), LLM provider fallback neon → anthropic → openai (`src/lib/llm.ts`;
+today OpenAI gpt-5.5, no Anthropic key on this machine). Dev: `pnpm dev -p 3100`.
+Data: day 1 = `cali_1week` (163 clips, 2,367 sentences, 3,084 moments). Scripts: `pnpm ingest <folder> [title]`,
+`pnpm seed:rules`, `pnpm db:push`.
+
 ## Plan and SDK notes (written 4.10 01:20, before kickoff — no code yet)
 
 - **`docs/plan.md`** is the plan: pitch, architecture, hour-by-hour schedule, verified SDK cheat sheet
