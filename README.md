@@ -23,10 +23,19 @@ MIT licensed.
    a cold open, one hook line, three acts, speech kept as one track, cutaways that show what is being
    said, drives with their own sound.
 4. **Renders it.** `vlog_cut.py` lays the script out as OpenTimelineIO, the Rust renderer cuts the mp4
-   on the Mac (on Fly.io this is a sprite job). The player appears in the chat.
+   on the Mac (on Fly.io this is a sprite job). The render runs in the background; the chat card shows
+   the renderer's progress lines and turns into a player with a poster when the file is ready.
 5. **Learns.** "Первые 10 секунд скучные, нужен хук" → the remark becomes a durable rule
    (`rules` table), the script is revised, the opening re-cut. Ten rules were seeded from a month of
    real corrections; every new one is shown as a card.
+
+## Screens
+
+| Live analysis of an uploaded clip | Search card | Renders and rules |
+|---|---|---|
+| ![live analysis](docs/screens/live-analysis-done.png) | ![search](docs/screens/search-card.png) | ![renders](docs/screens/renders-rules.png) |
+
+Demo video (3 min): https://youtu.be/cMesYoTxqjw
 
 ## Stack (hack sponsors, each doing a real job)
 
