@@ -12,3 +12,12 @@ Profile for the demo: "in SF 5–11 Oct, I build video AI agents, no crypto". Ba
 
 Rules: never pay, never solve captchas, approval-required → `pending`. Dry-run the selectors at ~12:30
 before the live demo. Name on forms: Rustam Salavatov; email: rust-6252@agentmail.to.
+
+## Luma anonymous RSVP flow (probed 09:40 on luma.com/smodxivh, not submitted)
+
+1. Page loads with a `button` whose text is `Register` (class `lux-button … primary`).
+2. Click → inline form (no dialog): `input[name="name"]` (placeholder "Your Name"), `input[name="email"]`
+   (placeholder "you@email.com"), then the same `Register` button submits.
+3. After submit Luma likely asks for a one-time code sent to the email (UNVERIFIED): the agent must read
+   the newest AgentMail message, extract the 6-digit code, and type it. Treat captcha as `needs_human`.
+4. Success signs: `?tk=` in URL / "You're in" text / Add to Calendar button. Never trust the "Going" count.
