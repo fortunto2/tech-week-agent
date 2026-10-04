@@ -63,6 +63,18 @@ confirmation arriving → morning brief for tomorrow.
 - These live in a private repo with personal trip data. Re-implement cleanly here; never copy files from
   `6-crm/trips/` or anything personal.
 
+## Seed data (already collected, public fields only)
+
+- `data/seed-events.json` — **2,065 real Bay Area events from 4.10 onward** (Luma 1,300, Meetup 476,
+  Stanford 273, Indexical 16), exported from Rustam's events store: url, name, start/end (ISO), city,
+  venue, platform, access (`open|approval|paid|full`), going, hosts. No personal columns.
+  Use it to load Neon on startup and as the **demo fallback** if Luma rate-limits (403) live.
+- The same events also sit in his Notion database "SF Events — All Platforms" (id in
+  `~/startups/solopreneur/6-crm/trips/events/notion.json`, token `~/.config/notion/token`, never print it).
+  His Grok Bot reads that Notion DB. Nice demo extra: the agent writes its picks back to a Notion page
+  or DB ("Notion as the human-facing view") — but the source of truth for the hack is Neon.
+- That Notion DB has a personal «My status» column — never export or show it.
+
 ## Stack (suggested — TypeScript to fit the sponsors)
 
 Next.js app (assistant-ui chat) + Mastra agent + Neon Postgres (drizzle) + Kernel + AgentMail + Exa.
