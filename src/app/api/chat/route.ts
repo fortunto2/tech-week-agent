@@ -1,36 +1,17 @@
-import { openai } from "@ai-sdk/openai";
-import { frontendTools } from "@assistant-ui/ai-sdk";
-import {
-  type JSONSchema7,
-  streamText,
-  convertToModelMessages,
-  type UIMessage,
-} from "ai";
+// Mastra director agent → AI SDK v7 UI message stream → assistant-ui.
+import { handleChatStream, withSseHeartbeat } from "@mastra/ai-sdk";
+import { createUIMessageStreamResponse, type UIMessage } from "ai";
+import { mastra } from "@/mastra";
 
-export const maxDuration = 30;
+export const maxDuration = 600; // renders run inside a tool call
 
 export async function POST(req: Request) {
-  const {
-    messages,
-    system,
-    tools,
-  }: {
-    messages: UIMessage[];
-    system?: string;
-    tools?: Record<string, { description?: string; parameters: JSONSchema7 }>;
-  } = await req.json();
-
-  const result = streamText({
-    model: openai("gpt-6-luna"),
-    messages: await convertToModelMessages(messages),
-    tools: {
-      ...frontendTools(tools ?? {}),
-    },
-    ...(system === undefined ? {} : { system }),
+  const { messages, threadId } = (await req.json()) as { messages: UIMessage[]; threadId?: string };
+  const stream = await handleChatStream<UIMessage>({
+    mastra,
+    agentId: "director",
+    version: "v7",
+    params: { messages, memory: { thread: threadId ?? "owner-main", resource: "owner" } },
   });
-
-  return result.toUIMessageStreamResponse({
-    onError: (error) =>
-      error instanceof Error ? error.message : String(error),
-  });
+  return withSseHeartbeat(createUIMessageStreamResponse({ stream }), 15000);
 }
