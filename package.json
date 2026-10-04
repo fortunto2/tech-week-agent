@@ -11,7 +11,8 @@
     "db:push": "drizzle-kit push",
     "ingest": "node --env-file=.env.local --import tsx scripts/ingest.ts",
     "seed:rules": "node --env-file=.env.local --import tsx scripts/seed-rules.ts",
-    "embed": "node --env-file=.env.local --import tsx scripts/embed.ts"
+    "embed": "node --env-file=.env.local --import tsx scripts/embed.ts",
+    "caption": "node --env-file=.env.local --import tsx scripts/caption.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.71",

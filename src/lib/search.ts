@@ -82,3 +82,29 @@ export async function searchFootage(query: string, opts: { k?: number; dayId?: n
     via: r.in_vec && r.in_kw ? "both" : r.in_vec ? "vector" : "keyword",
   }));
 }
+
+export type PictureHit = { momentId: number; clipTag: string; dayId: number; dayTitle: string; startSecs: number; endSecs: number; caption: string; shotAt: string | null; distance: number };
+
+/** What the camera saw: cosine search over the per-clip captions in `moments`. */
+export async function searchPictures(query: string, opts: { k?: number; dayId?: number } = {}): Promise<PictureHit[]> {
+  const k = opts.k ?? 8;
+  const vec = JSON.stringify(await embedQuery(query));
+  const dayFilter = opts.dayId ? sql`and c.day_id = ${opts.dayId}` : sql``;
+  const res = await db.execute(sql`
+    select m.id as moment_id, c.tag as clip_tag, c.day_id, d.title as day_title, m.start_secs, m.end_secs, m.caption, c.shot_at,
+           m.embedding <=> ${vec}::vector as distance
+    from moments m join clips c on c.id = m.clip_id join days d on d.id = c.day_id
+    where m.caption is not null ${dayFilter}
+    order by distance limit ${k}`);
+  return (res.rows as Record<string, unknown>[]).map((r) => ({
+    momentId: Number(r.moment_id),
+    clipTag: String(r.clip_tag),
+    dayId: Number(r.day_id),
+    dayTitle: String(r.day_title),
+    startSecs: Number(r.start_secs),
+    endSecs: Number(r.end_secs),
+    caption: String(r.caption),
+    shotAt: r.shot_at ? new Date(r.shot_at as string).toISOString() : null,
+    distance: Number(r.distance),
+  }));
+}

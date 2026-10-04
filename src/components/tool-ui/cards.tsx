@@ -115,7 +115,8 @@ export function RulesCard({ rules }: { rules: { id: number; category: string; te
 }
 
 type Hit = { clipTag: string; dayTitle: string; idx: number; text: string; startSecs: number; shotAt: string | null; language: string | null; via: string };
-export function SearchCard({ r }: { r: { query: string; hits: Hit[] } }) {
+type Pic = { clipTag: string; startSecs: number; caption: string };
+export function SearchCard({ r }: { r: { query: string; hits: Hit[]; pictures?: Pic[] } }) {
   const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Los_Angeles" }) : "");
   return (
     <div className="my-2 rounded-xl border border-border bg-card p-3 text-sm">
@@ -137,6 +138,21 @@ export function SearchCard({ r }: { r: { query: string; hits: Hit[] } }) {
           </li>
         ))}
       </ol>
+      {r.pictures && r.pictures.length > 0 && (
+        <>
+          <div className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">what the camera saw</div>
+          <ul className="mt-1 space-y-1">
+            {r.pictures.map((p, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="shrink-0 rounded bg-amber-500/15 px-1 font-mono text-xs">
+                  {p.clipTag} @{Math.round(p.startSecs)}s
+                </span>
+                <span className="text-muted-foreground">{p.caption}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   );
 }
