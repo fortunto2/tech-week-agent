@@ -23,10 +23,10 @@ export const ScriptSchema = z.object({
   layout: z.object({ hold: z.number().default(4), cutaway: z.number().default(2.8) }).default({ hold: 4, cutaway: 2.8 }),
   open: z
     .object({
-      shots: z.array(z.object({ clip: z.string().regex(/^\d{4}$/), at: z.number().min(0), len: z.number().min(0.8).max(3) })).min(3).max(8),
+      shots: z.array(z.object({ clip: z.string().regex(/^\d{4}$/), at: z.number().min(0), len: z.number().min(0.8).max(3) })).min(1).max(8),
     })
     .optional(),
-  shots: z.array(ShotSchema).min(5).max(60),
+  shots: z.array(ShotSchema).min(2).max(60),
 });
 
 export type Script = z.infer<typeof ScriptSchema>;

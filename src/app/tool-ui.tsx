@@ -65,7 +65,16 @@ export const toolkit = defineToolkit({
     type: "backend",
     display: "standalone",
     render: ({ result, status }) => {
-      if (status.type === "running") return <Running label="Rendering on the Mac (vlog_cut → video-analyzer)… 1–3 min" />;
+      if (status.type === "running") return <Running label="Starting the render…" />;
+      if (status.type === "incomplete") return <Failed reason={String(status.reason)} />;
+      return result ? <RenderCard r={result as never} /> : null;
+    },
+  },
+  render_status: {
+    type: "backend",
+    display: "standalone",
+    render: ({ result, status }) => {
+      if (status.type === "running") return <Running label="Checking the render…" />;
       if (status.type === "incomplete") return <Failed reason={String(status.reason)} />;
       return result ? <RenderCard r={result as never} /> : null;
     },

@@ -2,6 +2,7 @@ import { createTool } from "@mastra/core/tools";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
+import { mediaUrl, posterPath } from "@/lib/render";
 
 export const listRenders = createTool({
   id: "list_renders",
@@ -19,6 +20,7 @@ export const listRenders = createTool({
         status: z.string(),
         durationSecs: z.number().nullable(),
         mediaUrl: z.string().nullable(),
+        posterUrl: z.string().nullable(),
         createdAt: z.string(),
       }),
     ),
@@ -41,7 +43,8 @@ export const listRenders = createTool({
         kind: r.kind,
         status: r.status,
         durationSecs: r.durationSecs,
-        mediaUrl: r.status === "done" && r.path ? `/api/media?path=${encodeURIComponent(r.path)}` : null,
+        mediaUrl: r.status === "done" && r.path ? mediaUrl(r.path) : null,
+        posterUrl: r.status === "done" && r.path ? mediaUrl(posterPath(r.path)) : null,
         createdAt: r.createdAt.toISOString(),
       })),
     };

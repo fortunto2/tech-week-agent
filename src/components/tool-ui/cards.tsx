@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 // Generative UI cards for the director's tools. Each takes the tool's result shape; all handle "no result yet".
 
 type DaySummary = { dayId: number; title: string; clips: number; withSpeech: number; languages: Record<string, number>; shotFrom: string | null; shotTo: string | null; totalMinutes: number };
@@ -72,18 +73,47 @@ export function ScriptCard({ r }: { r: ScriptResult }) {
   );
 }
 
-export function RenderCard({ r }: { r: { status: string; mediaUrl: string | null; durationSecs: number | null; log: string } }) {
-  if (r.status !== "done" || !r.mediaUrl)
+type RenderStatus = { renderId: number; status: string; mediaUrl: string | null; posterUrl?: string | null; durationSecs: number | null; progress?: string; log?: string };
+
+/** Polls /api/renders/<id> while rendering, then shows the player. */
+export function RenderCard({ r }: { r: RenderStatus }) {
+  const [st, setSt] = useState<RenderStatus>(r);
+  useEffect(() => {
+    setSt(r);
+  }, [r]);
+  useEffect(() => {
+    if (st.status !== "rendering") return;
+    const t = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/renders/${st.renderId}`, { cache: "no-store" });
+        if (res.ok) setSt(await res.json());
+      } catch {
+        /* keep polling */
+      }
+    }, 3000);
+    return () => clearInterval(t);
+  }, [st.status, st.renderId]);
+
+  if (st.status === "rendering")
+    return (
+      <div className="my-2 rounded-xl border border-border bg-card p-3 text-sm">
+        <div className="flex items-center gap-2 font-medium">
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-400" /> Rendering on the Mac · vlog_cut → OpenTimelineIO → Rust renderer
+        </div>
+        <pre className="mt-1 max-h-24 overflow-hidden whitespace-pre-wrap text-xs text-muted-foreground">{st.progress ?? "queued"}</pre>
+      </div>
+    );
+  if (st.status !== "done" || !st.mediaUrl)
     return (
       <div className="my-2 rounded-xl border border-destructive/40 bg-card p-3 text-sm">
-        <div className="font-medium">Render {r.status}</div>
-        <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap text-xs text-muted-foreground">{r.log}</pre>
+        <div className="font-medium">Render {st.status}</div>
+        <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap text-xs text-muted-foreground">{st.progress ?? st.log}</pre>
       </div>
     );
   return (
     <div className="my-2 overflow-hidden rounded-xl border border-border bg-black">
-      <video src={r.mediaUrl} controls playsInline className="aspect-video w-full" />
-      <div className="px-3 py-1 text-xs text-muted-foreground">{r.durationSecs ? `${Math.round(r.durationSecs)} s` : ""}</div>
+      <video src={st.mediaUrl} poster={st.posterUrl ?? undefined} controls playsInline className="aspect-video w-full" />
+      <div className="px-3 py-1 text-xs text-muted-foreground">{st.durationSecs ? `${Math.floor(st.durationSecs / 60)}:${String(Math.round(st.durationSecs % 60)).padStart(2, "0")}` : ""}</div>
     </div>
   );
 }
@@ -183,13 +213,13 @@ export function InboxCard({ r }: { r: { inbox: string; checked: number; ingested
   );
 }
 
-type RenderRow = { renderId: number; version: number; dayTitle: string; about: string; status: string; durationSecs: number | null; mediaUrl: string | null };
+type RenderRow = { renderId: number; version: number; dayTitle: string; about: string; status: string; durationSecs: number | null; mediaUrl: string | null; posterUrl?: string | null };
 export function RendersCard({ renders }: { renders: RenderRow[] }) {
   return (
     <div className="my-2 grid gap-2">
       {renders.map((r) => (
         <div key={r.renderId} className="overflow-hidden rounded-xl border border-border bg-card text-sm">
-          {r.mediaUrl && <video src={r.mediaUrl} controls preload="metadata" playsInline className="aspect-video w-full bg-black" />}
+          {r.mediaUrl && <video src={r.mediaUrl} poster={r.posterUrl ?? undefined} controls preload="metadata" playsInline className="aspect-video w-full bg-black" />}
           <div className="p-3">
             <div className="flex items-baseline justify-between">
               <span className="font-medium">{r.dayTitle} · v{r.version}</span>
