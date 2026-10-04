@@ -4,11 +4,11 @@
 // ffmpeg only decodes and scales; nothing leaves the machine.
 import { execFile, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import path from "node:path";
 import { promisify } from "node:util";
+import { importAtRuntime } from "@/lib/dynamic-import";
 
 const execFileP = promisify(execFile);
-const require = createRequire(import.meta.url);
 
 type Engine = {
   score_frame: (w: number, h: number, rgb24: Uint8Array, timestamp: number, genre?: string | null) => string;
@@ -19,8 +19,12 @@ let enginePromise: Promise<Engine> | null = null;
 export function engine(): Promise<Engine> {
   if (!enginePromise) {
     enginePromise = (async () => {
-      const mod = (await import("life2film-engine")) as unknown as { default: (i: { module_or_path: Buffer }) => Promise<unknown> } & Engine;
-      await mod.default({ module_or_path: readFileSync(require.resolve("life2film-engine/va_wasm_bg.wasm")) });
+      // Non-literal specifier: the bundler must leave this to Node (wasm-pack glue + .wasm bytes resolve at runtime).
+      // Both strings are built at runtime so no bundler can constant-fold them into the server bundle.
+      const name = process.env.L2F_ENGINE_PKG ?? "life2film-engine";
+      const mod = await importAtRuntime<{ default: (i: { module_or_path: Buffer }) => Promise<unknown> } & Engine>(name);
+      const wasmPath = process.env.L2F_ENGINE_WASM ?? path.join(process.cwd(), "node_modules", name, "va_wasm_bg.wasm");
+      await mod.default({ module_or_path: readFileSync(wasmPath) });
       return mod;
     })();
   }

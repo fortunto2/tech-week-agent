@@ -1,3 +1,4 @@
+import "server-only";
 import { Mastra } from "@mastra/core";
 import { PostgresStore } from "@mastra/pg";
 import { director } from "./agents/director";

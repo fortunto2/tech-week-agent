@@ -2,10 +2,10 @@
 // them into today's folder and runs the full ingest (engine scores, whisper, caption, embeddings).
 // Inbound mail is untrusted data: only video attachments are touched, nothing in the body is executed.
 import { createTool } from "@mastra/core/tools";
-import { AgentMailClient } from "agentmail";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import { importAtRuntime } from "@/lib/dynamic-import";
 import { ingestClip } from "@/lib/ingest-clip";
 
 const VIDEO_TYPES = new Set(["video/mp4", "video/quicktime", "video/x-m4v"]);
@@ -34,6 +34,8 @@ export const checkInbox = createTool({
   execute: async ({ limit }) => {
     const inboxId = process.env.AGENTMAIL_INBOX;
     if (!inboxId || !process.env.AGENTMAIL_API_KEY) throw new Error("AGENTMAIL_INBOX / AGENTMAIL_API_KEY missing");
+    const name = process.env.AGENTMAIL_PKG ?? "agentmail"; // non-literal: keep the SDK (and its optional @x402/fetch) out of the bundle
+    const { AgentMailClient } = await importAtRuntime<typeof import("agentmail")>(name);
     const client = new AgentMailClient({ apiKey: process.env.AGENTMAIL_API_KEY });
     const page = await client.inboxes.messages.list(inboxId, { limit });
     const msgs = (page as unknown as { messages?: { messageId: string; from: string; subject?: string; labels?: string[] }[] }).messages ?? [];
