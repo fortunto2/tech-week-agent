@@ -97,6 +97,7 @@ export const writeScript = createTool({
     openFrames: z.number(),
     problems: z.array(z.string()),
     script: z.any(),
+    next: z.string().describe("what to do now"),
   }),
   execute: async ({ dayId, brief, targetSecs, feedback, focus }) => {
     const [rules, day] = await Promise.all([activeRulesText(), dayText(dayId)]);
@@ -131,6 +132,7 @@ export const writeScript = createTool({
       openFrames: script.open?.shots.length ?? 0,
       problems,
       script,
+      next: problems.length ? `fix the problems by revising, then call render_script(${row.id})` : `call render_script(${row.id}) now unless the owner asked for the script only`,
     };
   },
 });
