@@ -96,6 +96,8 @@ explicit «отмени». Don't touch Epiphan mail/Slack. Messages in his name:
   (call first; a guessed key returns nothing), `get_event`, `get_event_links`. SF Tech Week 5–11 Oct.
 - **Neon AI Gateway needs a paid plan + prepaid credit** → claim the $500 before enabling it; fallback
   LLM is the Anthropic key in `~/startups/active/solo-factory-studio/.env.local`.
+- **Submission = demo video URL (≤3 min) only**, on the team page in the portal (team created 09:15,
+  captain rust.starman). Record the video by 14:20, upload unlisted, paste, save before 14:45.
 - Nothing sponsor-related exists locally: no Neon/Exa/Kernel/AgentMail keys, `fly` not logged in,
   `neon` CLI not installed. Copyable: `solo-factory-studio/{drizzle.config.ts,db/}`,
   `life2film/app/api/chat/route.ts`.

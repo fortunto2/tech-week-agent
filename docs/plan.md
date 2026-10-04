@@ -187,9 +187,14 @@ instead of deprecated `makeAssistantToolUI`.
 - **Fly.io**: `fly auth login; fly launch` (Dockerfile + fly.toml), `output:"standalone"`, `fly secrets
   set …`, region sjc. Sprites: `@fly/sprites` `SpritesClient(SPRITES_TOKEN).createSprite("scan-sf")`,
   `s.spawn("bash",["-c","node scan.js"])`; token creation UNVERIFIED → only if claimed in 5 min.
-- **Portal** build-personal-agents.com/dashboard is login-gated: at 09:00 log in, copy the submission
-  fields and the claim links (Fly $500, Kernel $50, Exa $50, AgentMail code). Assume repo URL +
-  description + demo video.
+- **Portal** (verified 09:15, logged in as rust.starman via Google): team "Tech Week Agent" created,
+  page `build-personal-agents.com/teams/8061ba88-264c-42b0-b70d-28a7a1516971`. **The submission is ONE
+  field: DEMO VIDEO URL (≤3 min, judges must be able to open it) + a confirm checkbox.** No repo/
+  description fields. So the video IS the submission: record by 14:20, upload unlisted to YouTube,
+  paste URL, tick, SAVE SUBMISSION before leaving at 14:45. Credit claim buttons on /stack unlock in
+  person on the day (Neon $500 + AI Gateway $500, Mastra $25, Exa $50, Fly $500, Kernel $50,
+  AgentMail dev plan; Executor free; CodeRabbit "coming soon"). Sponsor skills install via
+  `npx skills add <repo> -s <skills> -y -g -a claude-code`.
 
 ## Morning checklist 09:00–10:30 (allowed before kickoff; no code)
 
