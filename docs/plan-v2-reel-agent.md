@@ -90,3 +90,10 @@ with RRF (40 candidates each, k=60). `write_script(focus=[clip:idx…])` builds 
 "ролик для бабушки про дочку" = search → script → render. Next: `moments.caption` (VLM caption of each clip's
 best frame) + embedding, so "закат у океана" finds picture, not only speech. Audience: parents (family archive
 you can ask questions), vloggers (daily cut without the editing night).
+
+## State at 15:20 (submission)
+
+Done: ingest (9 Chicago/California days + uploads), hybrid search + picture search, director with rules,
+background render with progress + posters, learn_rule loop, upload with live analysis and sidecars, AgentMail
+inbox tool, describe_film with Exa, CI, README with screens. Demo v4: https://youtu.be/q82Q4302cio.
+Not done: Fly deploy (card), Neon AI Gateway path (paid plan), Kernel posting, Apple Photos picker.
