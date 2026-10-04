@@ -35,7 +35,7 @@ MIT licensed.
 |---|---|---|
 | ![live analysis](docs/screens/live-analysis-done.png) | ![search](docs/screens/search-card.png) | ![renders](docs/screens/renders-rules.png) |
 
-Demo video (3 min): https://youtu.be/9c_1wPj-eaI
+Demo video (3 min): https://youtu.be/Zsj_Q_RUofM
 
 ## Stack (hack sponsors, each doing a real job)
 
