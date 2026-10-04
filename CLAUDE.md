@@ -1,8 +1,9 @@
-# Tech Week Agent — Build Personal Agents Hack (Neon), SF, Sun 4.10.2026
+# Life2Film Director — Build Personal Agents Hack (Neon), SF, Sun 4.10.2026
 
-A personal agent that runs your conference week: finds the events that matter **by location**, applies to
-the free ones, tracks approvals in its own inbox, and briefs you on the day. Built from a workflow Rustam
-actually ran for SF Tech Week 2026 with scripts and Claude Code; the hack turns it into a product.
+A personal film director: a day of the owner's footage → searchable memory in Neon → script by his own
+rules → rendered trailer, learning his taste from every correction. (The repo started the morning as a
+conference-concierge agent; the pivot and the current architecture are in the PIVOT section below and in
+`docs/plan-v2-reel-agent.md`.)
 
 ## The event (read `docs/hackathon-brief.txt`)
 

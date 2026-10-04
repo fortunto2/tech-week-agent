@@ -1,3 +1,5 @@
+> Superseded on 4.10 11:20 by `docs/plan-v2-reel-agent.md` (the product pivoted from a conference concierge to a personal film director). Kept for the schedule, accounts and SDK notes.
+
 # Plan — Tech Week Agent (Build Personal Agents Hack, Neon, SF, Sun 4.10.2026)
 
 ## Context
