@@ -20,7 +20,7 @@ const EMBED_MODEL = "text-embedding-3-small";
 
 export type Progress =
   | { stage: "probe"; durationSecs: number; width: number; height: number; fps: number; hasAudio: boolean }
-  | { stage: "frame"; t: number; score: number; isGarbage: boolean; sharpness: number; colorfulness: number; brightness: number; motion: number }
+  | { stage: "frame"; t: number; score: number; isGarbage: boolean; sharpness: number; colorfulness: number; brightness: number; motion: number; w?: number; h?: number; rgb?: string }
   | { stage: "shots"; shots: { startSecs: number; endSecs: number; score: number; bestFrameTs: number }[] }
   | { stage: "whisper"; status: "start" | "done"; sentences?: { idx: number; text: string; start: number; end: number }[]; language?: string | null }
   | { stage: "caption"; caption: string | null }
@@ -91,7 +91,8 @@ export async function ingestClip(file: string, opts: { dayTitle?: string; source
     const [frames, stt] = await Promise.all([
       scoreFrames(file, {
         size: { width: meta.width, height: meta.height },
-        onFrame: (f) => emit({ stage: "frame", t: f.t, score: f.score, isGarbage: f.isGarbage, sharpness: f.features.sharpness ?? 0, colorfulness: f.features.colorfulness ?? 0, brightness: f.features.brightness ?? 0, motion: f.motion }),
+        // The 128 px frame the engine scored travels with the event (base64 RGB24, ~27 KB) so the UI can show it.
+        onFrame: (f, _i, raw) => emit({ stage: "frame", t: f.t, score: f.score, isGarbage: f.isGarbage, sharpness: f.features.sharpness ?? 0, colorfulness: f.features.colorfulness ?? 0, brightness: f.features.brightness ?? 0, motion: f.motion, w: raw.w, h: raw.h, rgb: opts.onProgress ? Buffer.from(raw.rgb24).toString("base64") : undefined }),
       }),
       meta.hasAudio ? transcribe(file, tmp) : Promise.resolve(null),
     ]);

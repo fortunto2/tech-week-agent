@@ -52,7 +52,7 @@ export async function probe(file: string): Promise<{ durationSecs: number; width
 }
 
 /** Decode at `fps` samples/second, 128 px wide, and score every frame with the engine. */
-export async function scoreFrames(file: string, opts: { fps?: number; width?: number; size?: { width: number; height: number }; onFrame?: (f: FrameScore, i: number) => void } = {}): Promise<FrameScore[]> {
+export async function scoreFrames(file: string, opts: { fps?: number; width?: number; size?: { width: number; height: number }; onFrame?: (f: FrameScore, i: number, raw: { w: number; h: number; rgb24: Uint8Array }) => void } = {}): Promise<FrameScore[]> {
   const fps = opts.fps ?? 2;
   const w = opts.width ?? 128;
   const eng = await engine();
@@ -80,7 +80,7 @@ export async function scoreFrames(file: string, opts: { fps?: number; width?: nu
         const motion = prev ? Math.min(1, (Math.abs(mean.r - prev.r) + Math.abs(mean.g - prev.g) + Math.abs(mean.b - prev.b)) / 96) : 0;
         const fs: FrameScore = { t, score: r.score, isGarbage: r.is_garbage, features: r.features, mean, motion };
         out.push(fs);
-        opts.onFrame?.(fs, i);
+        opts.onFrame?.(fs, i, { w, h, rgb24: frame });
         i++;
       }
     });

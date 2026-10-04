@@ -2,7 +2,7 @@
 // Drop a clip, watch the analysis happen: frame scores arrive one by one from the life2film engine,
 // shots are found, whisper lines appear, the vision caption lands, embeddings are written. Nothing here is
 // animated for show; every number is an event from /api/analyze.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { IngestedClip, Progress } from "@/lib/ingest-clip";
 
 type Frame = Extract<Progress, { stage: "frame" }>;
@@ -41,6 +41,30 @@ function Sparkline({ frames, duration }: { frames: Frame[]; duration: number }) 
       ))}
       <circle cx={x(best.t)} cy={h - 4 - best.score * (h - 8)} r={3} className="fill-amber-400" />
     </svg>
+  );
+}
+
+/** The frames exactly as the engine saw them (128 px RGB24), drawn as they arrive; border = quality, red = garbage. */
+function FrameTile({ f }: { f: Frame }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    if (!c || !f.rgb || !f.w || !f.h) return;
+    const bin = atob(f.rgb);
+    const img = new ImageData(f.w, f.h);
+    for (let i = 0, j = 0; i < bin.length; i += 3, j += 4) {
+      img.data[j] = bin.charCodeAt(i);
+      img.data[j + 1] = bin.charCodeAt(i + 1);
+      img.data[j + 2] = bin.charCodeAt(i + 2);
+      img.data[j + 3] = 255;
+    }
+    c.getContext("2d")?.putImageData(img, 0, 0);
+  }, [f]);
+  const border = f.isGarbage ? "#ef4444" : `hsl(${Math.round(f.score * 120)} 70% 45%)`;
+  return (
+    <div className="shrink-0" title={`${f.t.toFixed(1)}s · ${Math.round(f.score * 100)}%`}>
+      <canvas ref={ref} width={f.w ?? 128} height={f.h ?? 72} style={{ width: 96, height: 54, borderBottom: `3px solid ${border}` }} className="block rounded-sm bg-muted" />
+    </div>
   );
 }
 
@@ -122,6 +146,9 @@ export function UploadAnalyze() {
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>frame quality · life2film engine, 2 fps, 31 measurements/frame</span>
               <span>{st.frames.length} frames{st.shots.length ? ` · ${st.shots.length} shots` : ""}</span>
+            </div>
+            <div className="mt-1 flex gap-1 overflow-x-auto pb-1" ref={(el) => { if (el) el.scrollLeft = el.scrollWidth; }}>
+              {st.frames.slice(-40).map((f) => <FrameTile key={f.t} f={f} />)}
             </div>
             <Sparkline frames={st.frames} duration={dur} />
             {st.shots.length > 0 && (
