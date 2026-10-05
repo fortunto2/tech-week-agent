@@ -19,8 +19,8 @@
 | Exa $50 | **applied** (balance $69.99) |
 | Kernel $50 | **activated** (hackathon access, org `techweek`) |
 | AgentMail dev plan | **trial started**, runs until 3 Nov 2026 |
-| Neon AI Gateway $500 | **requested** via portal form (org `org-spring-mouse-40959188`); applies only on the Launch plan (card) |
-| Neon $500 | needs Launch plan (card on file) — not done |
+| Neon AI Gateway $500 | **requested** via portal form (org `org-spring-mouse-40959188`); org is on Launch now, gateway balance still $0.00 until an organizer applies it |
+| Neon $500 | **claimed**: org on Launch, credit balance $500.00 (billing period from 5 Oct) |
 | Fly.io $500 | **claimed** (personal org, card on file) |
 | Mastra $25 | needs Stripe checkout with code `AGENTHACK` — not done |
 | CodeRabbit $1k | in person only — not done |
