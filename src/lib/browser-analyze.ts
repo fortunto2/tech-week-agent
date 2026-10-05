@@ -98,6 +98,8 @@ export async function analyzeInBrowser(file: File, onProgress: (p: Progress) => 
   big.width = 640; big.height = Math.round((H / W) * 640);
   big.getContext("2d")!.drawImage(video, 0, 0, big.width, big.height);
   const bestFrameJpeg = big.toDataURL("image/jpeg", 0.8);
+  video.removeAttribute("src"); // detach before revoking, or the element keeps re-requesting the dead blob URL
+  video.load();
   URL.revokeObjectURL(url);
   return { name: file.name, durationSecs, width: W, height: H, frames, shots, bestFrameJpeg };
 }
