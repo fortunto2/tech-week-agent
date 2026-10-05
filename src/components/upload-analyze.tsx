@@ -174,7 +174,7 @@ export function UploadAnalyze() {
         </button>
         <span className="text-xs text-muted-foreground">
           {st.file ? st.file : BROWSER_MODE ? `a phone or DJI clip → scored in your browser (WASM), captioned, searchable · nothing is uploaded · ${MAX_BROWSER_CLIPS} clips per visit` : "a phone or DJI clip → scored, transcribed, captioned, searchable"}
-          {st.meta && ` · ${Math.round(st.meta.durationSecs)} s · ${st.meta.width}×${st.meta.height} · ${st.meta.fps.toFixed(0)} fps`}
+          {st.meta && ` · ${Math.round(st.meta.durationSecs)} s · ${st.meta.width}×${st.meta.height}${st.meta.fps ? ` · ${st.meta.fps.toFixed(0)} fps` : ""}`}
         </span>
       </div>
       {st.error && <div className="mt-1 text-xs text-destructive">{st.error}</div>}

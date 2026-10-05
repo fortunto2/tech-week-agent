@@ -35,7 +35,9 @@ MIT licensed.
 |---|---|---|
 | ![live analysis](docs/screens/live-analysis-done.png) | ![search](docs/screens/search-card.png) | ![renders](docs/screens/renders-rules.png) |
 
-Live (chat, search, scripts, rules; renders and uploads run on the owner's Mac): https://tech-week-agent.vercel.app
+Live: https://tech-week-agent.vercel.app — chat, search, scripts, rules, and clip analysis **in your browser**
+(the WASM engine scores frames on-device; only scores and one frame are sent, nothing is uploaded).
+Speech, sidecars and renders need the Mac build.
 
 Demo video (3 min): https://youtu.be/NAmEDA6vIEY
 
