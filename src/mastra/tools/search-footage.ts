@@ -1,5 +1,6 @@
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
+import { keyFrom } from "@/lib/llm";
 import { searchFootage, searchPictures } from "@/lib/search";
 
 export const searchFootageTool = createTool({
@@ -33,8 +34,9 @@ export const searchFootageTool = createTool({
       z.object({ clipTag: z.string(), dayTitle: z.string(), startSecs: z.number(), caption: z.string(), shotAt: z.string().nullable() }),
     ).describe("clips whose picture matches, for show/walk shots"),
   }),
-  execute: async ({ query, dayId, k }) => {
-    const [hits, pictures] = await Promise.all([searchFootage(query, { k, dayId }), searchPictures(query, { k: 6, dayId })]);
+  execute: async ({ query, dayId, k }, options) => {
+    const key = keyFrom(options);
+    const [hits, pictures] = await Promise.all([searchFootage(query, { k, dayId, key }), searchPictures(query, { k: 6, dayId, key })]);
     return { query, hits: hits.map((h) => ({ ...h, ref: `${h.clipTag}:${h.idx}` })), pictures };
   },
 });

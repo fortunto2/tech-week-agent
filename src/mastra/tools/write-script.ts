@@ -6,7 +6,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { dayText } from "@/lib/day-text";
-import { model } from "@/lib/llm";
+import { keyFrom, model } from "@/lib/llm";
 import { SCRIPT_FORMAT_DOC, ScriptSchema, type Script } from "@/lib/script-schema";
 
 // What the model fills in. OpenAI strict JSON schema allows neither tuples nor optional keys, so this is a
@@ -99,13 +99,14 @@ export const writeScript = createTool({
     script: z.any(),
     next: z.string().describe("what to do now"),
   }),
-  execute: async ({ dayId, brief, targetSecs, feedback, focus }) => {
+  execute: async ({ dayId, brief, targetSecs, feedback, focus }, options) => {
+    const userKey = keyFrom(options);
     const [rules, day] = await Promise.all([activeRulesText(), dayText(dayId)]);
     const latest = await db.query.scripts.findFirst({ where: eq(schema.scripts.dayId, dayId), orderBy: desc(schema.scripts.version) });
     const previous = feedback && latest ? (latest.body as Script) : undefined;
 
     const { output } = await generateText({
-      model: model("director"),
+      model: model("director", userKey),
       output: Output.object({ schema: LlmScriptSchema }),
       prompt: directorPrompt({ brief: focus?.length ? `${brief}\n\nThe film is built around these moments (clip:sentence), every one of them must be a "say" shot: ${focus.join(", ")}` : brief, rules, day: day.text, previous, feedback, targetSecs }),
       maxOutputTokens: 12000,

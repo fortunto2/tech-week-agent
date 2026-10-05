@@ -4,7 +4,7 @@ import { Output, generateText } from "ai";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { model } from "@/lib/llm";
+import { keyFrom, model } from "@/lib/llm";
 
 const CATEGORIES = ["hook", "speech", "cutaway", "pacing", "cover", "copy", "music", "other"] as const;
 
@@ -30,9 +30,9 @@ export const learnRule = createTool({
     scriptId: z.number().optional().describe("the script the feedback was about"),
   }),
   outputSchema: z.object({ ruleId: z.number(), category: z.string(), text: z.string(), quote: z.string() }),
-  execute: async ({ quote, scriptId }) => {
+  execute: async ({ quote, scriptId }, options) => {
     const { output } = await generateText({
-      model: model("fast"),
+      model: model("fast", keyFrom(options)),
       output: Output.object({
         schema: z.object({
           category: z.enum(CATEGORIES),

@@ -5,6 +5,7 @@ import { embedMany, generateText } from "ai";
 import { eq, sql } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { clipTag } from "@/lib/sidecars";
+import { NO_KEY_MESSAGE, openaiKey as resolveKey } from "@/lib/llm";
 
 export const maxDuration = 60;
 const MAX_BODY = 2 * 1024 * 1024; // scores + one JPEG; a 10-minute clip is ~300 KB
@@ -49,7 +50,13 @@ export async function POST(req: Request) {
     ? await db.insert(schema.moments).values(body.shots.map((m) => ({ clipId: clip.id, startSecs: m.startSecs, endSecs: m.endSecs, score: m.score, bestFrameTs: m.bestFrameTs, features: m.features }))).returning({ id: schema.moments.id })
     : [];
 
-  const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  let apiKey: string;
+  try {
+    apiKey = resolveKey(req.headers.get("x-openai-key")?.trim());
+  } catch {
+    return new Response(NO_KEY_MESSAGE, { status: 402 });
+  }
+  const openai = createOpenAI({ apiKey });
   let caption: string | null = null;
   try {
     const { text } = await generateText({

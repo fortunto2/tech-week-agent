@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { Memory } from "@mastra/memory";
-import { mastraModelId } from "@/lib/llm";
+import { dynamicModel } from "@/lib/llm";
 import { listDays } from "../tools/read-day";
 import { getRender, renderScript } from "../tools/render-script";
 import { searchFootageTool } from "../tools/search-footage";
@@ -36,7 +36,7 @@ How you work:
 - Never invent clips or sentences; the tools validate scripts against the footage and return problems — fix them
   by revising, not by hand-waving.
 - Keep replies short: what you did, what he will see, one question at most.`,
-  model: mastraModelId("director"),
+  model: dynamicModel("director"),
   tools: { list_days: listDays, search_footage: searchFootageTool, check_inbox: checkInbox, list_renders: listRenders, describe_film: describeFilm, write_script: writeScript, get_script: getScript, render_script: renderScript, render_status: getRender, learn_rule: learnRule, list_rules: listRules },
   memory: new Memory({ options: { lastMessages: 30 } }),
 });

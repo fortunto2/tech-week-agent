@@ -38,7 +38,8 @@ memory, search and scripts.
 
 Live: https://tech-week-agent.vercel.app — chat, search, scripts, rules, and clip analysis **in your browser**
 (the WASM engine scores frames on-device; only scores and one frame are sent, nothing is uploaded).
-Speech, sidecars and renders need the Mac build.
+Speech, sidecars and renders need the Mac build. The hosted demo is **bring your own OpenAI key**: paste it in the
+header, it stays in your browser and travels only as a request header; no server-side key is configured.
 
 Demo video (3 min): https://youtu.be/NAmEDA6vIEY
 

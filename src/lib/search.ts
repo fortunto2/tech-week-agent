@@ -4,6 +4,7 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { embed } from "ai";
 import { sql } from "drizzle-orm";
 import { db } from "@/db";
+import { openaiKey } from "@/lib/llm";
 
 const EMBED_MODEL = "text-embedding-3-small";
 
@@ -23,15 +24,15 @@ export type FootageHit = {
   via: "both" | "vector" | "keyword";
 };
 
-export async function embedQuery(text: string): Promise<number[]> {
-  const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export async function embedQuery(text: string, key?: string | null): Promise<number[]> {
+  const openai = createOpenAI({ apiKey: openaiKey(key) });
   const { embedding } = await embed({ model: openai.textEmbeddingModel(EMBED_MODEL), value: text });
   return embedding;
 }
 
-export async function searchFootage(query: string, opts: { k?: number; dayId?: number } = {}): Promise<FootageHit[]> {
+export async function searchFootage(query: string, opts: { k?: number; dayId?: number; key?: string | null } = {}): Promise<FootageHit[]> {
   const k = opts.k ?? 12;
-  const vec = JSON.stringify(await embedQuery(query));
+  const vec = JSON.stringify(await embedQuery(query, opts.key));
   const dayFilter = opts.dayId ? sql`and c.day_id = ${opts.dayId}` : sql``;
   // 40 candidates per retriever, k = 60: the documented RRF starting point.
   const res = await db.execute(sql`
@@ -86,9 +87,9 @@ export async function searchFootage(query: string, opts: { k?: number; dayId?: n
 export type PictureHit = { momentId: number; clipTag: string; dayId: number; dayTitle: string; startSecs: number; endSecs: number; caption: string; shotAt: string | null; distance: number };
 
 /** What the camera saw: cosine search over the per-clip captions in `moments`. */
-export async function searchPictures(query: string, opts: { k?: number; dayId?: number } = {}): Promise<PictureHit[]> {
+export async function searchPictures(query: string, opts: { k?: number; dayId?: number; key?: string | null } = {}): Promise<PictureHit[]> {
   const k = opts.k ?? 8;
-  const vec = JSON.stringify(await embedQuery(query));
+  const vec = JSON.stringify(await embedQuery(query, opts.key));
   const dayFilter = opts.dayId ? sql`and c.day_id = ${opts.dayId}` : sql``;
   const res = await db.execute(sql`
     select m.id as moment_id, c.tag as clip_tag, c.day_id, d.title as day_title, m.start_secs, m.end_secs, m.caption, c.shot_at,

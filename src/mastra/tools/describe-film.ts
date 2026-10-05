@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
 import { importAtRuntime } from "@/lib/dynamic-import";
-import { model } from "@/lib/llm";
+import { keyFrom, model } from "@/lib/llm";
 import type { Script } from "@/lib/script-schema";
 
 async function exaFacts(query: string): Promise<{ title: string; url: string; snippet: string }[]> {
@@ -33,7 +33,7 @@ export const describeFilm = createTool({
     tags: z.array(z.string()),
     facts: z.array(z.object({ title: z.string(), url: z.string() })),
   }),
-  execute: async ({ scriptId, language }) => {
+  execute: async ({ scriptId, language }, options) => {
     const script = await db.query.scripts.findFirst({ where: eq(schema.scripts.id, scriptId) });
     if (!script) throw new Error(`script ${scriptId} not found`);
     const day = await db.query.days.findFirst({ where: eq(schema.days.id, script.dayId) });
@@ -42,7 +42,7 @@ export const describeFilm = createTool({
     const factsQuery = `${day?.title ?? ""} ${body._}`.slice(0, 200);
     const facts = await exaFacts(factsQuery);
     const { output } = await generateText({
-      model: model("director"),
+      model: model("director", keyFrom(options)),
       output: Output.object({
         schema: z.object({
           title: z.string().describe("≤ 70 chars, about the whole day, no clickbait"),

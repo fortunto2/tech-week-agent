@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { IngestedClip, Progress } from "@/lib/ingest-clip";
 import { analyzeInBrowser } from "@/lib/browser-analyze";
+import { getStoredKey } from "@/components/api-key";
 
 // Hosted deploys (no ffmpeg/whisper on the server) analyse in the browser with the same WASM engine and
 // send only scores, shots and one best frame. The Mac build streams the full server-side pipeline.
@@ -107,7 +108,7 @@ export function UploadAnalyze() {
           }
         });
       const result = await analyzeInBrowser(file, apply);
-      const res = await fetch("/api/analyze-client", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(result) });
+      const res = await fetch("/api/analyze-client", { method: "POST", headers: { "content-type": "application/json", ...(getStoredKey() ? { "x-openai-key": getStoredKey() } : {}) }, body: JSON.stringify(result) });
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
       const done = (await res.json()) as Done;
       setSt((s) => ({ ...s, caption: done.caption, embeddings: done.caption ? 1 : 0, done }));
