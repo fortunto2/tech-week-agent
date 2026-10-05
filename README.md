@@ -35,6 +35,8 @@ MIT licensed.
 |---|---|---|
 | ![live analysis](docs/screens/live-analysis-done.png) | ![search](docs/screens/search-card.png) | ![renders](docs/screens/renders-rules.png) |
 
+Live (chat, search, scripts, rules; renders and uploads run on the owner's Mac): https://tech-week-agent.vercel.app
+
 Demo video (3 min): https://youtu.be/NAmEDA6vIEY
 
 ## Stack (hack sponsors, each doing a real job)
