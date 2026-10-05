@@ -4,6 +4,12 @@
 // animated for show; every number is an event from /api/analyze.
 import { useEffect, useRef, useState } from "react";
 import type { IngestedClip, Progress } from "@/lib/ingest-clip";
+import { analyzeInBrowser } from "@/lib/browser-analyze";
+
+// Hosted deploys (no ffmpeg/whisper on the server) analyse in the browser with the same WASM engine and
+// send only scores, shots and one best frame. The Mac build streams the full server-side pipeline.
+const BROWSER_MODE = process.env.NEXT_PUBLIC_LOCAL_TOOLS === "0";
+const MAX_BROWSER_CLIPS = 3;
 
 type Frame = Extract<Progress, { stage: "frame" }>;
 type Shot = Extract<Progress, { stage: "shots" }>["shots"][number];
@@ -80,9 +86,41 @@ function Meter({ label, value }: { label: string; value: number }) {
 export function UploadAnalyze() {
   const [st, setSt] = useState<State>(empty);
   const [busy, setBusy] = useState(false);
+  const [doneCount, setDoneCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  async function runInBrowser(file: File) {
+    if (doneCount >= MAX_BROWSER_CLIPS) {
+      setSt({ ...empty, file: file.name, error: `hosted demo: up to ${MAX_BROWSER_CLIPS} clips per visit` });
+      return;
+    }
+    setBusy(true);
+    setSt({ ...empty, file: file.name });
+    try {
+      const apply = (ev: Progress) =>
+        setSt((s) => {
+          switch (ev.stage) {
+            case "probe": return { ...s, meta: ev };
+            case "frame": return { ...s, frames: [...s.frames, ev] };
+            case "shots": return { ...s, shots: ev.shots };
+            default: return s;
+          }
+        });
+      const result = await analyzeInBrowser(file, apply);
+      const res = await fetch("/api/analyze-client", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(result) });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      const done = (await res.json()) as Done;
+      setSt((s) => ({ ...s, caption: done.caption, embeddings: done.caption ? 1 : 0, done }));
+      setDoneCount((n) => n + 1);
+    } catch (e) {
+      setSt((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function run(file: File) {
+    if (BROWSER_MODE) return runInBrowser(file);
     setBusy(true);
     setSt({ ...empty, file: file.name });
     const fd = new FormData();
@@ -135,7 +173,7 @@ export function UploadAnalyze() {
           {busy ? "Analysing…" : "Upload a clip"}
         </button>
         <span className="text-xs text-muted-foreground">
-          {st.file ? st.file : "a phone or DJI clip → scored, transcribed, captioned, searchable"}
+          {st.file ? st.file : BROWSER_MODE ? `a phone or DJI clip → scored in your browser (WASM), captioned, searchable · nothing is uploaded · ${MAX_BROWSER_CLIPS} clips per visit` : "a phone or DJI clip → scored, transcribed, captioned, searchable"}
           {st.meta && ` · ${Math.round(st.meta.durationSecs)} s · ${st.meta.width}×${st.meta.height} · ${st.meta.fps.toFixed(0)} fps`}
         </span>
       </div>
@@ -144,7 +182,7 @@ export function UploadAnalyze() {
         <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_220px]">
           <div className="min-w-0">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>frame quality · life2film engine, 2 fps, 31 measurements/frame</span>
+              <span>frame quality · life2film engine{BROWSER_MODE ? " in your browser" : ""}, 2 fps, 31 measurements/frame</span>
               <span>{st.frames.length} frames{st.shots.length ? ` · ${st.shots.length} shots` : ""}</span>
             </div>
             <div className="mt-1 flex gap-1 overflow-x-auto pb-1" ref={(el) => { if (el) el.scrollLeft = el.scrollWidth; }}>
@@ -166,7 +204,7 @@ export function UploadAnalyze() {
               {st.lines.length > 6 && <div className="text-xs text-muted-foreground">… {st.lines.length} lines, {st.language}</div>}
               {st.caption && <div className="text-xs"><span className="text-muted-foreground">camera saw: </span>{st.caption}</div>}
               {st.embeddings !== undefined && <div className="text-xs text-muted-foreground">embeddings written: {st.embeddings} → Neon</div>}
-              {st.done && <div className="text-xs font-medium text-emerald-600">clip {st.done.tag} ingested · ask the director about it</div>}
+              {st.done && <div className="text-xs font-medium text-emerald-600">clip {st.done.tag} ingested · ask the director about it{BROWSER_MODE ? " (speech and renders need the Mac build)" : ""}</div>}
             </div>
           </div>
           <div className="space-y-1.5">
