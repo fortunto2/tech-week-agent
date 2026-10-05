@@ -3,8 +3,9 @@
 A personal agent that turns a day of your own footage into a trailer, and learns your taste from every
 correction you make.
 
-Built solo at the **Build Personal Agents Hack** (Neon, Terra Gallery, San Francisco, 4 Oct 2026).
-MIT licensed.
+Built solo in one day at the **Build Personal Agents Hack** (Neon, Terra Gallery, San Francisco, 4 Oct 2026).
+MIT licensed. Status: hackathon prototype, works end to end on the author's Mac; the hosted demo covers
+memory, search and scripts.
 
 ## What it does
 
