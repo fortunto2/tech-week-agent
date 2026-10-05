@@ -21,6 +21,6 @@
 | AgentMail dev plan | **trial started**, runs until 3 Nov 2026 |
 | Neon AI Gateway $500 | **requested** via portal form (org `org-spring-mouse-40959188`); applies only on the Launch plan (card) |
 | Neon $500 | needs Launch plan (card on file) — not done |
-| Fly.io $500 | needs a card on file (account rust-starman) — not done; claim by 18 Oct |
+| Fly.io $500 | **claimed** (personal org, card on file) |
 | Mastra $25 | needs Stripe checkout with code `AGENTHACK` — not done |
 | CodeRabbit $1k | in person only — not done |
