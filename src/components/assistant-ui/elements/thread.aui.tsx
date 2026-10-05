@@ -367,7 +367,7 @@ const ThreadWelcome: FC = () => {
         What shall we cut today?
       </p>
       <p className="mt-2 text-sm text-muted-foreground">
-        Try: «Найди моменты, где дочка говорит про дом» · «Собери 30-секундный ролик из загруженных клипов» · «Какие правила ты выучил?»
+        Try: "Find the moments where my daughter talks about home" · "Cut a 30-second reel from the clips I uploaded" · "What editing rules have you learned?"
       </p>
     </div>
   );
@@ -424,7 +424,6 @@ const ComposerAction: FC = () => {
 
   return (
     <div className="aui-composer-action-wrapper relative flex items-center justify-between">
-      <ComposerAddAttachment />
       <div className="flex items-center gap-1.5">
         <AuiIf condition={(s) => s.thread.capabilities.dictation}>
           <AuiIf condition={(s) => s.composer.dictation == null}>

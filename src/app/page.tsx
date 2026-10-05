@@ -14,7 +14,7 @@ export default function Home() {
       <main className="mx-auto flex h-dvh max-w-3xl flex-col">
         <header className="flex items-baseline justify-between border-b border-border px-4 py-2">
           <h1 className="text-base font-semibold">Life2Film Director</h1>
-          <span className="text-xs text-muted-foreground">your days → trailers · learns your taste</span>
+          <span className="text-xs text-muted-foreground">your footage → searchable memory → cuts by your rules</span>
         </header>
         {process.env.NEXT_PUBLIC_LOCAL_TOOLS !== "0" && <UploadAnalyze />}
         <div className="min-h-0 flex-1">
