@@ -7,6 +7,8 @@ Built solo in one day at the **Build Personal Agents Hack** (Neon, Terra Gallery
 MIT licensed. Status: hackathon prototype, works end to end on the author's Mac; the hosted demo covers
 memory, search and scripts.
 
+**Hosted demo:** [tech-week-agent.vercel.app](https://tech-week-agent.vercel.app) · **Video (2:51):** [youtu.be/NAmEDA6vIEY](https://youtu.be/NAmEDA6vIEY) · **Write-up:** [rustman.org](https://rustman.org/posts/neon-personal-agents-life2film-director-2026/)
+
 ## What it does
 
 1. **Knows your footage.** Clips from a DJI pocket camera and phones, with speech (whisper, word
